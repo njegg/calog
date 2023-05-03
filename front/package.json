@@ -1,5 +1,5 @@
 {
-  "name": "tracker",
+  "name": "calog",
   "main": "app/app.ts",
   "version": "1.0.0",
   "private": true,
@@ -9,9 +9,11 @@
     "svelte-native": "~1.0.0"
   },
   "devDependencies": {
+    "@nativescript/android": "^8.5.0",
     "@nativescript/preview-cli": "1.0.2",
     "@nativescript/types": "~8.5.0",
     "@nativescript/webpack": "~5.0.14",
+    "nativescript-dev-": "github:nativescript/android",
     "svelte": "~3.44.0",
     "svelte-loader": "^3.1.2",
     "svelte-native-preprocessor": "^1.0.0",

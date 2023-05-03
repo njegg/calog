@@ -1,13 +1,20 @@
 <script lang='ts'>
-  import { ListView, ObservableArray, PropertyChangeData } from '@nativescript/core';
-  import { onMount } from 'svelte';
-  import { Template } from 'svelte-native/components';
-  import { Exercise } from '~/exercise';
+  import { ObservableArray, PropertyChangeData } from '@nativescript/core';
+    import { onMount } from 'svelte';
+    import { showModal } from 'svelte-native';
+  import { Card, Exercise } from '~/exercise';
+  import AddSession from './AddSession.svelte';
+  import ExerciseCard from './ExerciseCard.svelte';
+  import ExerciseList from './ExerciseList.svelte';
 
-  export let exercises: ObservableArray<Exercise>;
-  $: searchResults = exercises;
+  export let exercises: Exercise[];
 
-  let searchString = '';
+  let cards: ObservableArray<Card> = new ObservableArray();
+  exercises.forEach((e, i) => cards.push(new Card(e, i)));
+
+  $: searchResults = cards;
+ 
+  let searchString: string = '';
 
   function searchMatch(term: string, str: string) {
     let termLen = term.length;
@@ -34,9 +41,9 @@
     searchString = change.value;
 
     if (searchString == '') {
-      searchResults = exercises;
+      searchResults = cards;
     } else {
-      searchResults = exercises.filter(x => searchMatch(searchString, x.name))
+      searchResults = cards.filter(c => searchMatch(searchString, c.exercise.name))
     }
   };
   
@@ -44,15 +51,12 @@
     searchString = '';
   }
 
-  function selectItem() {
+  async function selectExercise() {
+    let len = searchResults.length;
+    if (len == 0) return;
 
+    console.log(searchResults[len - 1].exercise.name);
   }
-
-  let listView: ListView;
-
-  onMount(async () => {
-    listView.scrollToIndex(exercises.length - 1);
-	});
 
 </script>
 
@@ -60,32 +64,23 @@
   justifyContent='flex-end'
   flexDirection='column'
 >
-
-  <listView
-    row='1'
-    bind:this='{listView}'
-    items='{searchResults}'
-    on:itemTap='{selectItem}'
-  >
-    <Template let:item>
-      <label
-        text='{item.name}'
-        textWrap='true'
-      />
-    </Template>
-  </listView>
+  <ExerciseList bind:cards={searchResults} />
 
   <flexboxLayout
       minHeight='200px'
   >
     <label text=' s ' />
 
+    <!-- TODO: use SearchField lmao -->
     <textField
       id="search-input"
-      bind:text='{searchString}'
-      on:textChange='{onTextChange}'
-      hint=''
+
+      bind:text={searchString}
+      on:textChange={onTextChange}
       editable='true'
+
+      returnKeyType='go'
+      on:returnPress={selectExercise}
 
       textAlignment='center'
       fontFamily='monospace'
@@ -97,16 +92,11 @@
     />
 
     <label text=' x ' on:tap='{clearSearch}' />
-
   </flexboxLayout>
 </flexboxLayout>
 
 <style>
   #search-input {
     flex: 1;
-  }
-
-  #clear-button {
-    background: transparent;
   }
 </style>
