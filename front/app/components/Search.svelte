@@ -1,20 +1,24 @@
 <script lang='ts'>
-  import { ObservableArray, PropertyChangeData } from '@nativescript/core';
+  import { ObservableArray, PropertyChangeData, TextField } from '@nativescript/core';
     import { onMount } from 'svelte';
     import { showModal } from 'svelte-native';
   import { Card, Exercise } from '~/exercise';
-  import AddSession from './AddSession.svelte';
-  import ExerciseCard from './ExerciseCard.svelte';
+    import AddSessionModal from './AddSessionModal.svelte';
   import ExerciseList from './ExerciseList.svelte';
 
   export let exercises: Exercise[];
+  export let isInView: boolean = true;
 
-  let cards: ObservableArray<Card> = new ObservableArray();
-  exercises.forEach((e, i) => cards.push(new Card(e, i)));
+  $: searchResults = exercises;
+  $: searchString = '';
 
-  $: searchResults = cards;
- 
-  let searchString: string = '';
+  let selectedExercise: Exercise | undefined = undefined;
+
+  $: {
+    if (isInView) {
+      /* setTimeout(() => textField.nativeElement.focus(), 0); */
+    }
+  }
 
   function searchMatch(term: string, str: string) {
     let termLen = term.length;
@@ -41,9 +45,9 @@
     searchString = change.value;
 
     if (searchString == '') {
-      searchResults = cards;
+      searchResults = exercises;
     } else {
-      searchResults = cards.filter(c => searchMatch(searchString, c.exercise.name))
+      searchResults = exercises.filter(e => searchMatch(searchString, e.name))
     }
   };
   
@@ -51,23 +55,41 @@
     searchString = '';
   }
 
-  async function selectExercise() {
-    let len = searchResults.length;
-    if (len == 0) return;
-
-    console.log(searchResults[len - 1].exercise.name);
+  function selectExercise() {
+    selectedExercise =  searchResults[searchResults.length - 1];
   }
 
+  let textField: TextField;
+
+  async function onTap(event: Event) {
+    let exercise = event.detail.exercise;
+    selectedExercise = exercise;
+  }
+
+  function returnPress(e: Event) {
+    let sessionData = e.detail;
+
+    console.log(sessionData);
+
+    selectedExercise = undefined;
+  }
 </script>
 
 <flexboxLayout
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <ExerciseList bind:cards={searchResults} />
+  {#if selectedExercise != undefined }
+    <AddSessionModal bind:input={searchString} exercise={selectedExercise} on:returnPress={returnPress}/>
+  {:else}
+    <ExerciseList cards={searchResults} on:tap={onTap}/>
+  {/if}
 
   <flexboxLayout
       minHeight='200px'
+      backgroundColor='#1f1d2e'
+      borderRadius='100'
+      margin='10'
   >
     <label text=' s ' />
 
@@ -76,19 +98,18 @@
       id="search-input"
 
       bind:text={searchString}
-      on:textChange={onTextChange}
-      editable='true'
+      bind:this={textField}
 
-      returnKeyType='go'
+      on:textChange={onTextChange}
       on:returnPress={selectExercise}
+
+      editable='true'
+      returnKeyType='go'
 
       textAlignment='center'
       fontFamily='monospace'
       fontSize='20rem'
       borderWidth='0'
-      paddingBottom='10em'
-
-      margin='0'
     />
 
     <label text=' x ' on:tap='{clearSearch}' />

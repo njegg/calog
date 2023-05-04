@@ -13,6 +13,8 @@
     background: "#191724",
     text: "#e0def4",
   };
+
+  let selectedIndex = 1;
 </script>
 
 <page
@@ -28,14 +30,14 @@
     backgroundColor="{theme.background}"
     androidTabsPosition="bottom"
     on:selectedIndexChange="{homeToggle}"
-    selectedIndex="1"
+    bind:selectedIndex={selectedIndex}
   >
     <tabViewItem title="Home" style="text-transform: lowercase;">
       <label textWrap="true"></label>
     </tabViewItem>
 
     <tabViewItem title="Fuzzy" style="text-transform: lowercase;">
-      <Search exercises="{exercises}" />
+      <Search exercises="{exercises}" isInView={selectedIndex == 1} />
     </tabViewItem>
   </tabView>
 </page>

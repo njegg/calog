@@ -1,30 +1,22 @@
 <script lang='ts'>
-    import { ItemEventData, ObservableArray } from "@nativescript/core";
+  import { ListView, ObservableArray } from "@nativescript/core";
+    import { showModal } from "svelte-native";
   import { Template } from "svelte-native/components";
-  import { Card } from "~/exercise";
+  import { Exercise } from "~/exercise";
+    import AddSessionModal from "./AddSessionModal.svelte";
   import ExerciseCard from "./ExerciseCard.svelte";
 
-  export let cards: ObservableArray<Card>;
-
-  console.log(">>>>>>>>>>>>>>>> cards: " + cards);
-
-  function itemTap(itemEventData: ItemEventData) {
-    let index = itemEventData.index;
-    
-    let tapped = cards.getItem(index);
-    tapped.selected = !tapped.selected;
-    cards.setItem(index, tapped);
-  }
+  export let cards: ObservableArray<Exercise>;
 </script>
 
 <listView
   row='1'
-  on:itemTap={itemTap}
   items={cards}
+  borderColor='#000'
+  separatorColor='rgb(0,0,0,0)'
 >
   <Template let:item>
-    <ExerciseCard card={item} /> 
+    <ExerciseCard exercise={item} on:tap/>
   </Template>
 </listView>
-
 

@@ -1,49 +1,41 @@
-
 <script lang='ts'>
-  import { Card } from "~/exercise";
-  
-  export let card: Card;
+  import { createEventDispatcher } from "svelte";
+  import { Exercise } from "~/exercise";
+  import ExerciseList from "./ExerciseList.svelte";
+
+  export let exercise: Exercise;
+
+  let dispach = createEventDispatcher();
+
+  function select() {
+    dispach('tap', {exercise});
+  }
+
+  function showStats() {
+    console.log(`${exercise.name} stats`)
+  }
 </script>
 
-<stackLayout>
+<flexboxLayout >
+  <label
+    on:tap={select}
+    text={exercise.name}
 
-  <flexboxLayout
-  >
+    textWrap='true'
+    flexGrow={1}
+    backgroundColor='#31748f'
+    color='#e0def4'
+    borderRadius={100}
+    textAlignment='center'
+  />
 
-    <label
-      text={card.exercise.name}
-      textWrap='true'
-    />
+  <button
+    on:tap={showStats}
+    text='?'
 
-    {#if card.selected }
-      <button>+</button>
-      <button>?</button>
-    {/if}
-  </flexboxLayout>
-
-  {#if card.selected }
-
-    <flexboxLayout >
-      <textField
-        width='50'
-        editable='true'
-      />
-
-      <label text='X'/>
-
-      <textField
-        width='50'
-        editable='true'
-      />
-    </flexboxLayout>
-
-    <flexboxLayout >
-      <label text='sets'/>
-      <label text=''/>
-      <label text='reps'/>
-
-    </flexboxLayout>
-    
-  {/if}
-
-</stackLayout>
+    borderRadius={100}
+    backgroundColor='#eb6f92'
+    width={10}
+    padding={0}
+  />
+</flexboxLayout>
