@@ -1,18 +1,27 @@
 <script lang='ts'>
-  import { ObservableArray, PropertyChangeData, TextField } from '@nativescript/core';
-    import { onMount } from 'svelte';
-    import { showModal } from 'svelte-native';
-  import { Card, Exercise } from '~/exercise';
-    import AddSessionModal from './AddSessionModal.svelte';
+  import { PropertyChangeData, TextField } from '@nativescript/core';
+  import { Exercise } from '~/exercise';
+  import AddSessionModal from './AddSessionModal.svelte';
   import ExerciseList from './ExerciseList.svelte';
 
   export let exercises: Exercise[];
   export let isInView: boolean = true;
 
   $: searchResults = exercises;
-  $: searchString = '';
+  $: input = '';
 
-  let selectedExercise: Exercise | undefined = undefined;
+  $: reps = '';
+  $: sets = '';
+
+  let keyboardType: "number" | "integer" | "datetime" | "phone" | "url" | "email" | undefined = 'url';
+  let selectedExercise: Exercise;
+
+  enum Selection {
+    EXERCISE, SETS, REPS
+  };
+
+  let selection: Selection = Selection.EXERCISE;
+  /* selectedExercise = exercises[0]; */
 
   $: {
     if (isInView) {
@@ -42,69 +51,108 @@
   }
 
   function onTextChange(change: PropertyChangeData) {
-    searchString = change.value;
+    input = change.value;
 
-    if (searchString == '') {
-      searchResults = exercises;
+    if (selection == Selection.EXERCISE) {
+      if (input == '') {
+        searchResults = exercises;
+      } else {
+        searchResults = exercises.filter(e => searchMatch(input, e.name))
+      }
+    } else if (selection == Selection.SETS) {
+      sets = change.value;
     } else {
-      searchResults = exercises.filter(e => searchMatch(searchString, e.name))
+      reps = change.value;
     }
   };
   
-  function clearSearch() {
-    searchString = '';
+  function clearInput() {
+    input = '';
   }
 
-  function selectExercise() {
-    selectedExercise =  searchResults[searchResults.length - 1];
+  function onTap(event: Event) {
+    selectedExercise = event.detail.exercise;
+    nextSelection();
   }
 
-  let textField: TextField;
+  function returnPress() {
+    if (selection == Selection.EXERCISE) {
+      let exercisesFound = searchResults.length;
+      if (!exercisesFound) return;
 
-  async function onTap(event: Event) {
-    let exercise = event.detail.exercise;
-    selectedExercise = exercise;
+      selectedExercise =  searchResults[exercisesFound - 1];
+    } 
+
+    nextSelection();
+
+    input = '';
   }
 
-  function returnPress(e: Event) {
-    let sessionData = e.detail;
+  function nextSelection() {
+    switch (selection) {
+      case Selection.EXERCISE: {
+        selection = Selection.SETS;
+        keyboardType = 'integer';
+        break;
+      }
+      case Selection.SETS: {
+        selection = Selection.REPS
+        keyboardType = 'integer';
+        break;
+      }
+      case Selection.REPS: {
+        selection = Selection.EXERCISE;
+        keyboardType = 'url';
+        
+        reps = '';
+        sets = '';
 
-    console.log(sessionData);
+        break;
+      }
+    }
 
-    selectedExercise = undefined;
+    clearInput();
   }
+
 </script>
 
 <flexboxLayout
   justifyContent='flex-end'
   flexDirection='column'
 >
-  {#if selectedExercise != undefined }
-    <AddSessionModal bind:input={searchString} exercise={selectedExercise} on:returnPress={returnPress}/>
+  {#if selection != Selection.EXERCISE }
+    <AddSessionModal
+      bind:reps
+      bind:sets 
+      exercise={selectedExercise}
+      on:returnPress={returnPress}/>
   {:else}
     <ExerciseList cards={searchResults} on:tap={onTap}/>
   {/if}
 
   <flexboxLayout
-      minHeight='200px'
-      backgroundColor='#1f1d2e'
-      borderRadius='100'
-      margin='10'
-  >
-    <label text=' s ' />
+      backgroundColor='#21202e'
 
-    <!-- TODO: use SearchField lmao -->
+      minHeight={60}
+      height={60}
+      
+      borderRadius={100}
+      margin={10}
+      padding={10}
+  >
+    <!-- TODO: use SearchField ? -->
     <textField
       id="search-input"
+      flexGrow={1}
 
-      bind:text={searchString}
-      bind:this={textField}
+      bind:text={input}
 
       on:textChange={onTextChange}
-      on:returnPress={selectExercise}
+      on:returnPress={returnPress}
 
       editable='true'
-      returnKeyType='go'
+      returnKeyType='next'
+      bind:keyboardType
 
       textAlignment='center'
       fontFamily='monospace'
@@ -112,7 +160,16 @@
       borderWidth='0'
     />
 
-    <label text=' x ' on:tap='{clearSearch}' />
+    <label
+      on:tap={clearInput}
+
+      width={40}
+      height={40}
+      text='✕'
+      textAlignment='center'
+      borderRadius={100}
+      backgroundColor='#eb6f92'
+    />
   </flexboxLayout>
 </flexboxLayout>
 

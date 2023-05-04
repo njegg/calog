@@ -18,7 +18,7 @@
 </script>
 
 <page
-  bind:actionBarHidden="{isHomeSelected}"
+  actionBarHidden={true}
   style="
     font-size: 20rem;
     font-family: monospace;
@@ -27,13 +27,21 @@
   <actionBar backgroundColor="{theme.background}" title="Calisthenics tracker"></actionBar>
 
   <tabView
-    backgroundColor="{theme.background}"
-    androidTabsPosition="bottom"
     on:selectedIndexChange="{homeToggle}"
     bind:selectedIndex={selectedIndex}
+
+    backgroundColor="{theme.background}"
+    androidTabsPosition="bottom"
+    tabTextColor='#6e6a86'
+    tabBackgroundColor='#191724'
+    selectedTabTextColor='#ebbcba'
+    androidSelectedTabHighlightColor='#191724'
   >
-    <tabViewItem title="Home" style="text-transform: lowercase;">
-      <label textWrap="true"></label>
+    <tabViewItem
+        title="Home"
+        style="text-transform: lowercase;"
+    >
+      <label textWrap="true" text='yeet'></label>
     </tabViewItem>
 
     <tabViewItem title="Fuzzy" style="text-transform: lowercase;">

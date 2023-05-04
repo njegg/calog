@@ -1,10 +1,10 @@
 <script lang='ts'>
-    import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher } from "svelte";
   import { Exercise } from "~/exercise";
 
   export let exercise: Exercise;
-  export let input: string;
-
+  export let sets: string;
+  export let reps: string;
 
   /* onMount(() => { */
   /*   utils.dismissSoftInput(); */
@@ -19,11 +19,7 @@
 
   const dispatch = createEventDispatcher();
 
-  $: sets = input;
-  $: reps = '';
-
   function nextField() {
-    input = '';
     console.log('nextField')
   }
 
@@ -39,45 +35,24 @@
   />
 
   <flexboxLayout>
-    <textfield
-      bind:text={sets}
-
-      keyboardType='integer'
-      editable='true'
-      returnKeyType='next'
-      on:returnPress={nextField}
-      
-      flexGrow={1}
-    />
+    <label text={sets}/>
     <label
       text='x'
       textAlignment='center'
       flexGrow={1}
     />
-
-    <textField 
-      bind:text={reps}
-      keyboardType='integer'
-      on:returnPress={returnPress}
-
-      editable='true'
-
-      flexGrow={1}
-    />
+    <label text={reps}/>
   </flexboxLayout>
 
   <flexboxLayout>
-  <label
+    <label
       text='rows'
-      flexGrow={1}
     />
     <label
       text=''
-      flexGrow={1}
     />
     <label
       text='sets'
-      flexGrow={1}
     />
   </flexboxLayout>
 </stackLayout>

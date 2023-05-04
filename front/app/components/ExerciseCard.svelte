@@ -1,7 +1,6 @@
 <script lang='ts'>
   import { createEventDispatcher } from "svelte";
   import { Exercise } from "~/exercise";
-  import ExerciseList from "./ExerciseList.svelte";
 
   export let exercise: Exercise;
 
@@ -16,26 +15,30 @@
   }
 </script>
 
-<flexboxLayout >
+<flexboxLayout
+    backgroundColor='#524f67'
+    color='#e0def4'
+    borderRadius={20}
+    padding={10}
+>
   <label
     on:tap={select}
     text={exercise.name}
 
     textWrap='true'
     flexGrow={1}
-    backgroundColor='#31748f'
-    color='#e0def4'
-    borderRadius={100}
     textAlignment='center'
-  />
+  >
+  </label>
 
-  <button
+  <label
     on:tap={showStats}
-    text='?'
 
-    borderRadius={100}
+    width={40}
+    height={40}
+    text='…'
+    textAlignment='center'
+    borderRadius='100'
     backgroundColor='#eb6f92'
-    width={10}
-    padding={0}
   />
 </flexboxLayout>
