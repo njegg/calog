@@ -1,12 +1,13 @@
 <script lang="ts">
   import { PropertyChangeData } from "@nativescript/core";
+    import { dismissKeyboard } from "@nativescript/core/utils";
   import { exercises } from "~/exercise";
   import Search from "./Search.svelte";
 
-  let isHomeSelected: boolean = true;
-
   function homeToggle(changeData: PropertyChangeData) {
-    isHomeSelected = changeData.value != 0;
+    if (changeData.value != 1) {
+      dismissKeyboard();
+    }
   }
 
   let theme = {
@@ -19,6 +20,8 @@
 
 <page
   actionBarHidden={true}
+  androidStatusBarBackground='#191724'
+
   style="
     font-size: 20rem;
     font-family: monospace;

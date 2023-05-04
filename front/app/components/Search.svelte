@@ -22,12 +22,11 @@
     EXERCISE, SETS, REPS
   };
 
-  let selection: Selection = Selection.EXERCISE;
-  /* selectedExercise = exercises[0]; */
+  $: selection = Selection.EXERCISE;
 
   $: {
     if (isInView) {
-      /* setTimeout(() => textField.nativeElement.focus(), 0); */
+      setTimeout(() => textField.nativeElement.focus(), 0);
     }
   }
 
@@ -100,7 +99,7 @@
         selection = Selection.REPS
         keyboardType = 'integer';
 
-        input = '';
+        setInput(reps);
 
         break;
       }
@@ -113,7 +112,7 @@
         reps = '';
         sets = '';
 
-        input = searchString;
+        setInput('');
 
         break;
       }
@@ -131,7 +130,7 @@
       case Selection.SETS: {
         selection = Selection.EXERCISE;
 
-        restoreSearch();
+        setInput(searchString);
 
         reps = '';
         sets = '';
@@ -142,7 +141,7 @@
       case Selection.REPS: {
         selection = Selection.SETS;
 
-        input = sets;
+        setInput(sets);
         keyboardType = 'integer';
         
         break;
@@ -150,19 +149,16 @@
     }
   }
 
-  function restoreSearch() {
-      input = searchString;
-      textField.nativeView.text = searchString;
-      textField.nativeView.setSelection(searchString.length);
+  function setInput(to: string) {
+      input = to;
+      textField.nativeView.text = to;
+      textField.nativeView.setSelection(to.length);
       setTimeout(() => textField.nativeElement.focus(), 0);
   }
 
   function saveSession() {
     console.log(`${selectedExercise?.name.toUpperCase()}\nsets: ${+sets}\nreps: ${+reps}\n`);
-
     selectedExercise = undefined;
-
-    restoreSearch();
   }
 
 </script>
@@ -175,8 +171,10 @@
     <AddSessionModal
       bind:reps
       bind:sets 
+      repsSelected={selection == Selection.REPS}
       exercise={selectedExercise}
-      on:returnPress={returnPress}/>
+      on:returnPress={returnPress}
+    />
   {:else}
     <ExerciseList cards={searchResults} on:tap={onTap}/>
   {/if}

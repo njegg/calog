@@ -16,7 +16,7 @@
 </script>
 
 <flexboxLayout
-    backgroundColor='#524f67'
+    backgroundColor='#26233a'
     color='#e0def4'
     borderRadius={20}
     padding={10}
