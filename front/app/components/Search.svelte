@@ -15,7 +15,7 @@
   $: searchString = '';
 
   let keyboardType: "number" | "integer" | "datetime" | "phone" | "url" | "email" | undefined = 'url';
-  let selectedExercise: Exercise;
+  let selectedExercise: Exercise | undefined;
   let textField: TextField;
 
   enum Selection {
@@ -70,10 +70,6 @@
     }
   };
   
-  function clearInput() {
-    input = '';
-  }
-
   function onTap(event: Event) {
     selectedExercise = event.detail.exercise;
     nextSelection();
@@ -88,8 +84,6 @@
     } 
 
     nextSelection();
-
-    input = '';
   }
 
   function nextSelection() {
@@ -113,6 +107,8 @@
       case Selection.REPS: {
         selection = Selection.EXERCISE;
         keyboardType = 'url';
+
+        saveSession();
         
         reps = '';
         sets = '';
@@ -135,11 +131,10 @@
       case Selection.SETS: {
         selection = Selection.EXERCISE;
 
+        restoreSearch();
+
         reps = '';
         sets = '';
-        input = searchString;
-        textField.nativeView.text = searchString;
-        textField.nativeView.setSelection(searchString.length);
         keyboardType = 'url';
 
         break;
@@ -153,6 +148,21 @@
         break;
       }
     }
+  }
+
+  function restoreSearch() {
+      input = searchString;
+      textField.nativeView.text = searchString;
+      textField.nativeView.setSelection(searchString.length);
+      setTimeout(() => textField.nativeElement.focus(), 0);
+  }
+
+  function saveSession() {
+    console.log(`${selectedExercise?.name.toUpperCase()}\nsets: ${+sets}\nreps: ${+reps}\n`);
+
+    selectedExercise = undefined;
+
+    restoreSearch();
   }
 
 </script>
