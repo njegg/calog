@@ -1,6 +1,8 @@
 <script lang='ts'>
   import { PropertyChangeData, TextField } from '@nativescript/core';
   import { Exercise } from '~/exercise';
+  import { Session } from '~/lib/session';
+  import { sessionStore } from '~/lib/sessionStore';
   import AddSessionModal from './AddSessionModal.svelte';
   import ExerciseList from './ExerciseList.svelte';
 
@@ -26,7 +28,7 @@
 
   $: {
     if (isInView) {
-      setTimeout(() => textField.nativeElement.focus(), 0);
+      /* setTimeout(() => textField.nativeElement.focus(), 0); */
     }
   }
 
@@ -157,8 +159,15 @@
   }
 
   function saveSession() {
-    console.log(`${selectedExercise?.name.toUpperCase()}\nsets: ${+sets}\nreps: ${+reps}\n`);
-    selectedExercise = undefined;
+    /* console.log(`${selectedExercise?.name.toUpperCase()}\nsets: ${+sets}\nreps: ${+reps}\n`); */
+
+    if (selectedExercise) {
+      let newSession: Session = new Session(selectedExercise, +sets, +reps);
+      
+      sessionStore.update((x) => { x.push(newSession); return x });
+
+      selectedExercise = undefined;
+    }
   }
 
 </script>

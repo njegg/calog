@@ -1,7 +1,9 @@
-<frame>
-    <Home />
+<frame
+  backgroundColor='#1f1d2e'
+>
+    <Main />
 </frame>
 
 <script lang="ts">
-    import Home from './components/Home.svelte'
+    import Main from './components/Main.svelte'
 </script>

@@ -1,66 +1,28 @@
-<script lang="ts">
-  import { PropertyChangeData } from "@nativescript/core";
-    import { dismissKeyboard } from "@nativescript/core/utils";
-  import { exercises } from "~/exercise";
-  import Search from "./Search.svelte";
+<script lang='ts'>
+    import { Template } from "svelte-native/components";
+  import { Session } from "~/lib/session";
+  import { sessionStore } from "~/lib/sessionStore";
+    
+  $: sessions = new Array<Session>;
 
-  function homeToggle(changeData: PropertyChangeData) {
-    if (changeData.value != 1) {
-      dismissKeyboard();
-    }
-  }
-
-  let theme = {
-    background: "#191724",
-    text: "#e0def4",
-  };
-
-  let selectedIndex = 1;
+  sessionStore.subscribe(x => sessions = x);
 </script>
 
-<page
-  actionBarHidden={true}
-  androidStatusBarBackground='#191724'
 
-  style="
-    font-size: 20rem;
-    font-family: monospace;
-  "
+<flexboxLayout
+  justifyContent='flex-end'
+  flexDirection='column'
 >
-  <actionBar backgroundColor="{theme.background}" title="Calisthenics tracker"></actionBar>
-
-  <tabView
-    on:selectedIndexChange="{homeToggle}"
-    bind:selectedIndex={selectedIndex}
-
-    backgroundColor="{theme.background}"
-    androidTabsPosition="bottom"
-    tabTextColor='#6e6a86'
-    tabBackgroundColor='#191724'
-    selectedTabTextColor='#ebbcba'
-    androidSelectedTabHighlightColor='#191724'
+  <listView
+    items={sessions}
+    borderColor='#000'
+    separatorColor='rgb(0,0,0,0)'
   >
-    <tabViewItem
-        title="Home"
-        style="text-transform: lowercase;"
-    >
-      <label textWrap="true" text='yeet'></label>
-    </tabViewItem>
-
-    <tabViewItem title="Fuzzy" style="text-transform: lowercase;">
-      <Search exercises="{exercises}" isInView={selectedIndex == 1} />
-    </tabViewItem>
-  </tabView>
-</page>
-
+    <Template let:item>
+      <label text={`${item.exercise.name} [${item.sets}] [${item.reps}]`}>
+    </Template>
+  </listView>
+</flexboxLayout>
 
 <style>
-  actionBar page tabViewItem {
-    background: #ff0000;
-  }
-  @font-face {
-      font-family: 'GothamRounded';
-      src: url('../fonts/GothamRounded-Book.otf');
-  }
 </style>
-
