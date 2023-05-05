@@ -44,13 +44,6 @@
     marginBottom={20}
   />
 
-  <!--
-  <flexboxLayout>
-    <label text='sets' class='bottom-text'/>
-    <label text='' class='bottom-text' />
-    <label text='reps' class='bottom-text'/>
-  </flexboxLayout> -->
-
   <flexboxLayout>
     <label
       class='repset-input'

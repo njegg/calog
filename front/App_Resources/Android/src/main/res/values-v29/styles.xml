@@ -13,6 +13,8 @@
     </style>
 
     <style name="AppTheme" parent="AppThemeBase29">
+        <item name="android:textColorPrimary">@color/rose</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:colorControlNormal">@color/rose</item>
     </style>
-
 </resources>

@@ -1,7 +1,7 @@
 import { NativeScriptConfig } from '@nativescript/core';
 
 export default {
-  id: 'org.nativescript.tracker',
+  id: 'org.nativescript.calog',
   appPath: 'app',
   appResourcesPath: 'App_Resources',
   android: {

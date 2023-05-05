@@ -1,10 +1,18 @@
 <script lang='ts'>
+  import { PropertyChangeData } from "@nativescript/core";
+  import { createEventDispatcher } from "svelte";
   import { TextField } from "tns-core-modules";
+  import { KeyboardType } from "~/lib/keyboardType";
 
-  export let next: () => any;
-  export let prev: () => any;
-  export let input: string;
-  export let textField: TextField;
+  export let next: () => void;
+  export let prev: () => void;
+
+  const dispatch = createEventDispatcher();
+
+  // TODO: maybe not needed
+  function onTextChange(change: PropertyChangeData) {
+    dispatch('textChange', { text: change.value });
+  }
 </script>
 
 <flexboxLayout
@@ -29,26 +37,7 @@
     backgroundColor='#403d52'
   />
 
-  <!-- TODO: use SearchField ? -->
-  <textField
-    bind:this={textField}
-    bind:text={input}
-
-    id="search-input"
-    flexGrow={1}
-
-    on:textChange
-    on:returnPress
-
-    editable='true'
-    returnKeyType='next'
-    bind:keyboardType
-
-    textAlignment='center'
-    fontFamily='monospace'
-    fontSize='20rem'
-    borderWidth='0'
-  />
+  <slot />
 
   <label
     on:tap={next}

@@ -3,6 +3,7 @@
     import { dismissKeyboard } from "@nativescript/core/utils";
   import { exercises } from "~/exercise";
     import Home from "./Home.svelte";
+    import NavigationBar from "./NavigationBar.svelte";
   import Search from "./Search.svelte";
 
   function homeToggle(changeData: PropertyChangeData) {

@@ -1,9 +1,7 @@
 <script lang='ts'>
-  import { ListView, ObservableArray } from "@nativescript/core";
-    import { showModal } from "svelte-native";
+  import { ObservableArray } from "@nativescript/core";
   import { Template } from "svelte-native/components";
   import { Exercise } from "~/exercise";
-    import AddSessionModal from "./AddSessionModal.svelte";
   import ExerciseCard from "./ExerciseCard.svelte";
 
   export let cards: ObservableArray<Exercise>;

@@ -1,10 +1,18 @@
 <script lang='ts'>
-  import { PropertyChangeData, TextField } from '@nativescript/core';
+  import { TextField } from '@nativescript/core';
+    import { PropertyChangeData } from 'tns-core-modules';
   import { Exercise } from '~/exercise';
+  import { KeyboardType } from '~/lib/keyboardType';
+    import { fuzzyMatch } from '~/lib/search';
   import { Session } from '~/lib/session';
-  import { sessionStore } from '~/lib/sessionStore';
+  import { addSession, sessionStore } from '~/lib/sessionStore';
   import AddSessionModal from './AddSessionModal.svelte';
   import ExerciseList from './ExerciseList.svelte';
+  import NavigationBar from './NavigationBar.svelte';
+
+  enum Selection {
+    EXERCISE, SETS, REPS
+  };
 
   export let exercises: Exercise[];
   export let isInView: boolean = true;
@@ -15,46 +23,15 @@
   $: reps = '';
   $: sets = '';
   $: searchString = '';
-
-  let keyboardType: "number" | "integer" | "datetime" | "phone" | "url" | "email" | undefined = 'url';
-  let selectedExercise: Exercise | undefined;
-  let textField: TextField;
-
-  enum Selection {
-    EXERCISE, SETS, REPS
-  };
-
   $: selection = Selection.EXERCISE;
+  $: textField = new TextField();
 
-  $: {
-    if (isInView) {
-      /* setTimeout(() => textField.nativeElement.focus(), 0); */
-    }
-  }
+  let keyboardType: KeyboardType = 'url';
+  let selectedExercise: Exercise | undefined;
 
-  function searchMatch(term: string, str: string) {
-    let termLen = term.length;
-    if (termLen == 0) return true;
 
-    let termIndex = 0;
-    let strIndex = 0;
-
-    while (termIndex < termLen && strIndex < str.length) {
-      let tchar: number = term.charCodeAt(termIndex);
-      let schar: number = str.charCodeAt(strIndex);
-
-      if (tchar == schar || tchar - schar == 32 || schar - tchar == 32) {
-        termIndex++;
-      }
-
-      strIndex++;
-    }
-
-    return termIndex == termLen;
-  }
-
-  function onTextChange(change: PropertyChangeData) {
-    input = change.value;
+  function onTextChange(event: PropertyChangeData) {
+    input = event.value;
 
     if (selection == Selection.EXERCISE) {
       searchString = input;
@@ -62,12 +39,12 @@
       if (input == '') {
         searchResults = exercises;
       } else {
-        searchResults = exercises.filter(e => searchMatch(searchString, e.name))
+        searchResults = exercises.filter(e => fuzzyMatch(searchString, e.name))
       }
     } else if (selection == Selection.SETS) {
-      sets = change.value;
+      sets = input;
     } else {
-      reps = change.value;
+      reps = input;
     }
   };
   
@@ -163,8 +140,8 @@
 
     if (selectedExercise) {
       let newSession: Session = new Session(selectedExercise, +sets, +reps);
-      
-      sessionStore.update((x) => { x.push(newSession); return x });
+
+      addSession(new Date(), newSession);
 
       selectedExercise = undefined;
     }
@@ -188,36 +165,17 @@
     <ExerciseList cards={searchResults} on:tap={onTap}/>
   {/if}
 
-  <flexboxLayout
-      backgroundColor='#21202e'
-
-      minHeight={60}
-      height={60}
-      
-      borderRadius={100}
-      margin={10}
-      padding={10}
+  <NavigationBar
+    prev={previousSelection}
+    next={returnPress}
+    
   >
-    <!-- TODO: use SearchField ? -->
-
-    <label
-      on:tap={previousSelection}
-
-      width={40}
-      height={40}
-      text='❮'
-      textAlignment='center'
-      color='#6e6a86'
-      borderRadius={100}
-      backgroundColor='#403d52'
-    />
-
     <textField
       bind:this={textField}
+      bind:text={input}
+
       id="search-input"
       flexGrow={1}
-
-      bind:text={input}
 
       on:textChange={onTextChange}
       on:returnPress={returnPress}
@@ -231,19 +189,7 @@
       fontSize='20rem'
       borderWidth='0'
     />
-
-    <label
-      on:tap={returnPress}
-
-      width={40}
-      height={40}
-      text='❯'
-      textAlignment='center'
-      borderRadius={100}
-      backgroundColor='#403d52'
-      color='#6e6a86'
-    />
-  </flexboxLayout>
+  </NavigationBar>
 </flexboxLayout>
 
 <style>
