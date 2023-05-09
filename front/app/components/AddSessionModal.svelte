@@ -1,34 +1,12 @@
 <script lang='ts'>
-  import { createEventDispatcher } from "svelte";
   import { Exercise } from "~/exercise";
+  import SelectableLabel from "./SelectableLabel.svelte";
 
   export let exercise: Exercise;
   export let sets: string;
   export let reps: string;
-  export let repsSelected: bool;
-
-  /* onMount(() => { */
-  /*   utils.dismissSoftInput(); */
-  /*   setTimeout(() => {}, 10); */
-
-  /*   setTimeout(() => { */
-  /*       firstTextField.nativeElement.focus(); */
-  /*       /1* utils.ad.showSoftInput(0); *1/ */
-  /*       utils.ad.getInputMethodManager().toggleSoftInput(android.view.inputmethod.InputMethodManager.SHOW_FORCED, 0) */
-  /*   }, 100); */
-	/* }); */
-
-  const dispatch = createEventDispatcher();
-
-  function nextField() {
-    console.log('nextField')
-  }
-
-  function returnPress() {
-    dispatch('returnPress', { reps: +reps, sets: +sets});
-  }
+  export let repsSelected: boolean;
 </script>
-
 
 <stackLayout
   backgroundColor='#26233a'
@@ -45,10 +23,10 @@
   />
 
   <flexboxLayout>
-    <label
-      class='repset-input'
-      text={sets == '' ? 'sets' : sets}
-      borderColor={repsSelected ? '#6e6a86' : '#ebbcba' }
+    <SelectableLabel
+      selected={repsSelected}
+      bind:text={sets}
+      alt='set'
     />
 
     <label
@@ -58,10 +36,10 @@
       flexGrow={1}
     />
 
-    <label
-      class='repset-input'
-      text={reps == '' ? 'reps' : reps}
-      borderColor={repsSelected ? '#ebbcba' : '#6e6a86' }
+    <SelectableLabel
+      selected={!repsSelected}
+      bind:text={reps}
+      alt='rep'
     />
   </flexboxLayout>
 

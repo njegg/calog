@@ -1,17 +1,36 @@
 <script lang='ts'>
+  import { onMount } from "svelte";
   import { Template } from "svelte-native/components";
+    import { DatePicker } from "tns-core-modules";
   import { Session } from "~/lib/session";
-  import { sessionStore } from "~/lib/sessionStore";
+  import { loadSessions, printFile, sessionStore } from "~/lib/sessionStore";
   import NavigationBar from "./NavigationBar.svelte";
     
-  $: sessions = new Map<string, Session[]>();
-  $: isDatePickerVisible = false;
-
-  let date = new Date();
-
   const dayInMS = 24 * 60 * 60 * 1000;
 
-  sessionStore.subscribe(x => sessions = x);
+  $: sessions = new Array<Session>();
+
+  $: isDatePickerVisible = false;
+  $: date = new Date();
+
+  let allSessions: Map<string, Session[]> = new Map();
+  $: {
+    sessions = allSessions.get(date.toLocaleDateString()) || [];
+  }
+
+  let mounted = false;
+
+  onMount(() => {
+    mounted = true;
+    sessionStore.set(loadSessions());
+	});
+
+  sessionStore.subscribe(x => {
+    if (mounted) {
+      allSessions = x;
+      sessions = x.get(date.toLocaleDateString()) || [];
+    }
+  });
 
   function next() {
     if (isDatePickerVisible) {
@@ -43,7 +62,8 @@
   flexDirection='column'
 >
   <listView
-    items={sessions.get(date.toLocaleDateString())}
+    flexGrow={1}
+    items={sessions}
     borderColor='#000'
     separatorColor='rgb(0,0,0,0)'
   >
@@ -55,6 +75,8 @@
   {#if isDatePickerVisible }
     <datePicker
       bind:date
+      height={200}
+      minHeight={200}
     />
   {/if}
 
@@ -63,6 +85,7 @@
     text='today'
     color='#403d52'
     textAlignment='center'
+    minHeight={30}
   />
 
   <NavigationBar

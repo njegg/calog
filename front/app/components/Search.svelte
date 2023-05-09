@@ -5,7 +5,7 @@
   import { KeyboardType } from '~/lib/keyboardType';
     import { fuzzyMatch } from '~/lib/search';
   import { Session } from '~/lib/session';
-  import { addSession, sessionStore } from '~/lib/sessionStore';
+  import { addSession, printFile, sessionStore } from '~/lib/sessionStore';
   import AddSessionModal from './AddSessionModal.svelte';
   import ExerciseList from './ExerciseList.svelte';
   import NavigationBar from './NavigationBar.svelte';
@@ -136,14 +136,14 @@
   }
 
   function saveSession() {
-    /* console.log(`${selectedExercise?.name.toUpperCase()}\nsets: ${+sets}\nreps: ${+reps}\n`); */
-
     if (selectedExercise) {
       let newSession: Session = new Session(selectedExercise, +sets, +reps);
 
       addSession(new Date(), newSession);
 
       selectedExercise = undefined;
+
+      printFile();
     }
   }
 
