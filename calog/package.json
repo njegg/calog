@@ -1,0 +1,26 @@
+{
+  "name": "calog",
+  "main": "app/app.ts",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@nativescript/core": "~8.5.0",
+    "@nativescript/datetimepicker": "^2.1.13",
+    "@nativescript/theme": "~3.0.2",
+    "@triniwiz/nativescript-couchbase": "^1.4.0",
+    "svelte-native": "~1.0.0",
+    "tns-core-modules": "^6.5.27"
+  },
+  "devDependencies": {
+    "@nativescript/android": "^8.5.0",
+    "@nativescript/preview-cli": "1.0.2",
+    "@nativescript/types": "~8.5.0",
+    "@nativescript/webpack": "~5.0.14",
+    "nativescript-dev-": "github:nativescript/android",
+    "svelte": "~3.44.0",
+    "svelte-loader": "^3.1.2",
+    "svelte-native-preprocessor": "^1.0.0",
+    "svelte-preprocess": "^4.7.0",
+    "typescript": "~4.8.4"
+  }
+}
