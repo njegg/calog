@@ -1,8 +1,9 @@
 <script lang='ts'>
+  import { SessionRepo } from "~/persistance/db";
   import { writeToPickedFile } from "../util/file_access";
 
   function backupSessions() {
-    writeToPickedFile('calog_sessions_data.json', { test: 'data' });
+    writeToPickedFile('calog_sessions_data.json', SessionRepo.all());
   }
 </script>
 

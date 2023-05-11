@@ -7,12 +7,10 @@ let global_data: number[]; // TODO: better way to pass data?
 
 export function writeToPickedFile(fileName: string, data: any) {
   let createAFileIntent = intentToPickCreateFile(fileName);
-  const activity = app.android.foregroundActivity || app.android.startActivity;
 
   global_data = anyToBytes(data);
 
-  console.log(global_data);
-
+  const activity = app.android.foregroundActivity || app.android.startActivity;
   activity.startActivityForResult(createAFileIntent, CREATE_FILE_AND_WRITE_REQUEST);
 }
 
@@ -22,6 +20,7 @@ app.android.on(app.AndroidApplication.activityResultEvent, (args: any) => {
       let uri: java.net.URI = args.intent.getData();
 
       writeBytesToUri(uri, global_data);
+
       global_data = [];
     } else {
       throw 'activity failed';

@@ -3,7 +3,7 @@ export enum ExerciseType {
 }
 
 export interface Exercise {
-  id?: number;
+  id?: string;
   name: string;
   type: ExerciseType;
 }

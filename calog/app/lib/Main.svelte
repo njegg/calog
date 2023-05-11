@@ -1,5 +1,4 @@
 <script lang="ts">
-  import NavigationBar from "~/lib/common/NavigationBar.svelte";
   import Home from "./home/Home.svelte";
   import Search from "./search/Search.svelte";
   import { ExerciseRepo } from '~/persistance/exercise_repo'

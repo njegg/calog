@@ -4,11 +4,11 @@
   import { Exercise } from '~/persistance/model/exercise';
   import { KeyboardType } from '~/../types/keyboardType';
   import { fuzzyMatch } from './fuzzyMatch';
-  import { Session } from '~/lib/session';
-  import { SessionManager } from '~/lib/sessionStore';
+  import { Session } from '~/persistance/model/session';
   import AddSessionModal from './AddSessionModal.svelte';
   import ExerciseList from './ExerciseList.svelte';
   import NavigationBar from '../common/NavigationBar.svelte';
+  import { SessionRepo } from '~/persistance/db';
 
   enum Selection {
     EXERCISE, SETS, REPS
@@ -26,7 +26,7 @@
   $: textField = new TextField();
 
   let keyboardType: KeyboardType = 'url';
-  let selectedExercise: Exercise | undefined;
+  let selectedExercise: Exercise;
 
   function updateSearchResults() {
       if (input == '') {
@@ -87,8 +87,15 @@
         selection = Selection.EXERCISE;
         keyboardType = 'url';
 
-        saveSession();
-        
+        if (selectedExercise) {
+          let session: Session = Session.of(new Date(), selectedExercise, +reps, +sets);
+
+          if (!SessionRepo.add(session))
+            throw "db add brokey"
+        } else {
+          throw 'how does throw work?' // TODO
+        }
+
         reps = '';
         sets = '';
 
@@ -139,14 +146,6 @@
 
       updateSearchResults();
   }
-
-  function saveSession() {
-    if (selectedExercise) {
-      SessionManager.addSession(new Session(selectedExercise, +sets, +reps, new Date));
-      selectedExercise = undefined;
-    }
-  }
-
 </script>
 
 <flexboxLayout
@@ -162,7 +161,7 @@
       on:returnPress={returnPress}
     />
   {:else}
-    <ExerciseList cards={searchResults} on:tap={onTap}/>
+    <ExerciseList exercises={searchResults} on:tap={onTap}/>
   {/if}
 
   <NavigationBar

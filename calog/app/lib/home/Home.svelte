@@ -1,37 +1,19 @@
 <script lang='ts'>
-  import { onMount } from "svelte";
   import { Template } from "svelte-native/components";
-  import { ListView } from "tns-core-modules";
-  import { Session } from "~/lib/session";
-  import { loadSessions, sessionStore } from "~/lib/sessionStore";
   import SessionCard from "./SessionCard.svelte";
   import NavigationBar from "~/lib/common/NavigationBar.svelte";
+  import { SessionRepo } from "~/persistance/db";
 
   const dayInMS = 24 * 60 * 60 * 1000;
 
-  let allSessions: Map<string, Session[]> = new Map<string, Session[]>();
-
   $: date = new Date();
   $: isDatePickerVisible = false;
-  $: sessions = allSessions.get(date.toLocaleDateString()) || [];
+  $: sessions = SessionRepo.allByDate(date);
 
-  let mounted = false;
-
-  let listView: ListView;
-
-  onMount(() => {
-      mounted = true;
-      sessionStore.set(loadSessions());
-  });
-
-  sessionStore.subscribe(x => {
-    if (mounted) {
-      allSessions = x;
-      sessions = x.get(date.toLocaleDateString()) || [];
-
-      listView.nativeElement.refresh(); // Fixes weird height bug
-    }
-  });
+  // TODO: do some caching for sessions
+  SessionRepo.onChangeListener(() => {
+    sessions = SessionRepo.allByDate(date);
+  })
 
   function next() {
     if (isDatePickerVisible) {
@@ -60,6 +42,14 @@
   function datePickerTap() {
     isDatePickerVisible = !isDatePickerVisible;
   }
+
+  function deleteSession(event: Event) {
+    let id: string = event.detail.id;
+
+    // Instantly delete from ui, db refresh from event takes some time
+    sessions = sessions.filter(s => s.id != id); 
+    SessionRepo.del(id);
+   }
 </script>
 
 
@@ -68,14 +58,12 @@
   flexDirection='column'
 >
   <listView
-    bind:this={listView}
     items={sessions}
     borderColor='#000'
     separatorColor='rgb(0,0,0,0)'
-    flexGrow={0}
   >
     <Template let:item>
-      <SessionCard session={item} />
+      <SessionCard session={item} on:delete={deleteSession} />
     </Template>
   </listView>
 
@@ -86,6 +74,7 @@
       height={200}
       minHeight={200}
       backgroundColor='#26233a'
+      margin={8}
     />
   {/if}
 

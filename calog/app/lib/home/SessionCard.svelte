@@ -1,24 +1,26 @@
 <script lang='ts'>
-  import { Session } from "~/lib/session";
-  import { selectedSession, SessionManager } from "~/lib/sessionStore";
+  import { selectedSession } from "~/lib/sessionStore";
   import Card from "~/lib/common/Card.svelte";
   import CircleButton from "~/lib/common/CircleButton.svelte";
+  import { Session } from "~/persistance/model/session";
+  import { createEventDispatcher } from "svelte";
 
   export let session: Session;
 
+  // TODO: more efficient way to this
   $: confirmDelete = false;
 
   selectedSession.subscribe(x => confirmDelete = x == session.id);
 
-  function onTap() {
-    selectedSession.update(x => {
-      return x == session.id ? -1 : session.id;
-    })
+  function onXTap() {
+    selectedSession.update(s => session.id == s ? undefined : session.id);
   }
 
+  const dispatch = createEventDispatcher();
   function deleteThis() {
-    SessionManager.deleteSession(session);
-    selectedSession.set(-1);
+    selectedSession.update(_ => undefined)
+
+    dispatch('delete', {id: session.id});
   }
 </script>
 
@@ -38,7 +40,7 @@
     {/if}
 
     <CircleButton
-      on:tap={onTap}
+      on:tap={onXTap}
       text='✕'
       backgroundColor='#eb6f92'
     />
@@ -49,27 +51,12 @@
     flexWrapBefore={true}
   >
     <label 
-      text={'' + session.sets}
+      text={session.sets + ' x ' + session.reps}
       color='#ebbcba'
       borderRadius={100}
       borderColor='#ebbcba'
       borderWidth={1}
-      width={50}
-      textAlignment='center'
-    />
-
-    <label 
-      text='✕'
-      color='#ebbcba'
-    />
-
-    <label 
-      text={'' + session.reps}
-      color='#ebbcba'
-      borderRadius={100}
-      borderColor='#ebbcba'
-      borderWidth={1}
-      width={50}
+      padding='4 10'
       textAlignment='center'
     />
   </flexboxLayout>

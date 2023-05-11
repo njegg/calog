@@ -1,7 +1,6 @@
 <script lang='ts'>
   import { createEventDispatcher } from "svelte";
   import { Exercise } from "~/persistance/model/exercise";
-  import { printFile } from "~/lib/sessionStore";
   import Card from "../common/Card.svelte";
 
   export let exercise: Exercise;
@@ -14,8 +13,6 @@
 
   function showStats() {
     console.log(`${exercise.name} stats`)
-
-    printFile();
   }
 </script>
 

@@ -9,3 +9,8 @@
   <slot />
 </flexboxLayout>
 
+<style>
+  flexboxLayout {
+    width: 100%;
+  }
+</style>
