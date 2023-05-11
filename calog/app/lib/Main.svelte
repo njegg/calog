@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { ExerciseRepo } from "~/persistance/db";
   import Home from "./home/Home.svelte";
   import Search from "./search/Search.svelte";
-  import { ExerciseRepo } from '~/persistance/exercise_repo'
-    import Settings from "./settings/Settings.svelte";
+  import Settings from "./settings/Settings.svelte";
 
   let theme = {
     background: "#191724",

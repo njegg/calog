@@ -3,12 +3,18 @@
   import SessionCard from "./SessionCard.svelte";
   import NavigationBar from "~/lib/common/NavigationBar.svelte";
   import { SessionRepo } from "~/persistance/db";
+    import { selectedSession } from "../selectedSessionCardStore";
 
   const dayInMS = 24 * 60 * 60 * 1000;
 
   $: date = new Date();
   $: isDatePickerVisible = false;
   $: sessions = SessionRepo.allByDate(date);
+
+  $: {
+    date;
+    selectedSession.update(_ => undefined);
+  }
 
   // TODO: do some caching for sessions
   SessionRepo.onChangeListener(() => {

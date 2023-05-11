@@ -1,5 +1,5 @@
 <script lang='ts'>
-  import { selectedSession } from "~/lib/sessionStore";
+  import { selectedSession } from "~/lib/selectedSessionCardStore";
   import Card from "~/lib/common/Card.svelte";
   import CircleButton from "~/lib/common/CircleButton.svelte";
   import { Session } from "~/persistance/model/session";
@@ -7,7 +7,7 @@
 
   export let session: Session;
 
-  // TODO: more efficient way to this
+  // TODO: more efficient way to this, move to parent?
   $: confirmDelete = false;
 
   selectedSession.subscribe(x => confirmDelete = x == session.id);

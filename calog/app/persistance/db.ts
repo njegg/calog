@@ -6,7 +6,7 @@ type ListenerAction = () => void;
 
 export class SessionRepo {
   private static dbName: string = 'sessions'
-  private static db: CouchBase = new CouchBase(this.dbName);
+  private static db: CouchBase = new CouchBase(this.dbName); // TODO: never closing bad?
 
   private static listeners: ListenerAction[]  = [];
 
@@ -14,7 +14,7 @@ export class SessionRepo {
     this.db.addDatabaseChangeListener((_) => {
       this.listeners.forEach(l => l.call(l));
     });
-  }
+  };
 
   static onChangeListener(action: ListenerAction) {
     this.listeners.push(action);
@@ -57,22 +57,27 @@ export class SessionRepo {
   }
 }
 
+// TODO: something better?
 export class ExerciseRepo {
   private static dbName: string = 'exercises'
 
-  // TODO: something better?
-  static all(): Exercise[] {
+  static {
     let db = new CouchBase(this.dbName);
-    db.destroyDatabase();
-    db = new CouchBase('exercises');
 
-    default_exercises.forEach(e => db.createDocument(e))
+    // No exercises, load default to db
+    if (!db.query({select: []}).length) {
+      default_exercises.forEach(e => db.createDocument(e)) // TODO: Batch perhaps, didnt work before
+    }
 
-    let exercises = db.query({ select: [] });;
+    db.close();
+  }
+
+  static all(): Exercise[] { // Not called often so open/close on call
+    let db = new CouchBase(this.dbName);
+    let exercises = db.query({ select: [] });
 
     db.close();
     return exercises;
   }
-
 }
 

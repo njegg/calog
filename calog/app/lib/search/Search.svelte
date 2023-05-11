@@ -9,6 +9,8 @@
   import ExerciseList from './ExerciseList.svelte';
   import NavigationBar from '../common/NavigationBar.svelte';
   import { SessionRepo } from '~/persistance/db';
+    import { onMount } from 'svelte';
+    import Settings from '../settings/Settings.svelte';
 
   enum Selection {
     EXERCISE, SETS, REPS
@@ -17,11 +19,12 @@
   export let exercises: Exercise[];
 
   $: searchResults = exercises;
+  $: searchString = '';
   $: input = '';
 
   $: reps = '';
   $: sets = '';
-  $: searchString = '';
+
   $: selection = Selection.EXERCISE;
   $: textField = new TextField();
 
@@ -111,6 +114,8 @@
       case Selection.EXERCISE: {
         input = '';
         searchString = '';
+
+        setInput(searchString);
 
         break;
       }
