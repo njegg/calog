@@ -6,7 +6,7 @@
   import { loadSessions, sessionStore } from "~/lib/sessionStore";
   import SessionCard from "./SessionCard.svelte";
   import NavigationBar from "~/lib/common/NavigationBar.svelte";
-    
+
   const dayInMS = 24 * 60 * 60 * 1000;
 
   let allSessions: Map<string, Session[]> = new Map<string, Session[]>();
@@ -20,9 +20,9 @@
   let listView: ListView;
 
   onMount(() => {
-    mounted = true;
-    sessionStore.set(loadSessions());
-	});
+      mounted = true;
+      sessionStore.set(loadSessions());
+  });
 
   sessionStore.subscribe(x => {
     if (mounted) {
@@ -52,21 +52,13 @@
       date = new Date();
     } else {
       let prevDay = date.getTime() - dayInMS
-      date.setTime(prevDay);
+        date.setTime(prevDay);
       date = date;
     }
   }
 
   function datePickerTap() {
     isDatePickerVisible = !isDatePickerVisible;
-  }
-
-
-  $: selectedCard = -1;
-  function selectCard(e: Event) {
-    selectedCard = e.detail.id;
-
-    console.log('home: ' + selectedCard);
   }
 </script>
 
@@ -97,17 +89,7 @@
     />
   {/if}
 
-  <!--label 
-    on:tap={() => date = new Date()}
-    text='today'
-    color='#403d52'
-    textAlignment='center'
-    minHeight={30}
-  /-->
-
-  <NavigationBar
-    next={next}
-    prev={prev}
+  <NavigationBar next={next} prev={prev}
   >
     <label
       on:tap={datePickerTap}

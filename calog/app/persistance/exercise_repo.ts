@@ -1,6 +1,8 @@
 import { Exercise, ExerciseType, default_exercises } from '~/persistance/model/exercise'
 import { CouchBase } from '@triniwiz/nativescript-couchbase';
 
+import { writeToPickedFile } from "~/lib/util/file_access";
+
 export class ExerciseRepo {
 
   static all(): Exercise[] {
@@ -11,6 +13,7 @@ export class ExerciseRepo {
     default_exercises.forEach(e => db.createDocument(e))
 
     let exercises = db.query({ select: [] });;
+
     db.close();
     return exercises;
   }

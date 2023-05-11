@@ -3,6 +3,7 @@
   import Home from "./home/Home.svelte";
   import Search from "./search/Search.svelte";
   import { ExerciseRepo } from '~/persistance/exercise_repo'
+    import Settings from "./settings/Settings.svelte";
 
   let theme = {
     background: "#191724",
@@ -30,17 +31,24 @@
     androidSelectedTabHighlightColor='#191724'
   >
     <tabViewItem
-        title="Home"
+        title="home"
         style="text-transform: lowercase;"
     >
       <Home />
     </tabViewItem>
 
     <tabViewItem
-      title="Fuzzy"
+      title="fuzzy"
       style="text-transform: lowercase;"
     >
       <Search exercises="{exercises}" />
+    </tabViewItem>
+
+    <tabViewItem
+      title="settings"
+      style="text-transform: lowercase;"
+    >
+      <Settings />
     </tabViewItem>
   </tabView>
 </page>
