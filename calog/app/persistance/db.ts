@@ -1,8 +1,10 @@
-import { CouchBase } from '@triniwiz/nativescript-couchbase'
+import { CouchBase, QueryLogicalOperator } from '@triniwiz/nativescript-couchbase'
 import { Session } from './model/session';
 import { Exercise, default_exercises } from './model/exercise'
+import { DateHash } from '~/lib/util/date_hash';
 
 type ListenerAction = () => void;
+export type SessionData = {reps: number, sets: number, dateHash: number};
 
 export class SessionRepo {
   private static dbName: string = 'sessions'
@@ -11,10 +13,14 @@ export class SessionRepo {
   private static listeners: ListenerAction[]  = [];
 
   static {
+    this.createListener();
+  };
+
+  private static createListener() {
     this.db.addDatabaseChangeListener((_) => {
       this.listeners.forEach(l => l.call(l));
     });
-  };
+  }
 
   static onChangeListener(action: ListenerAction) {
     this.listeners.push(action);
@@ -25,7 +31,7 @@ export class SessionRepo {
   }
 
   static add(session: Session): boolean {
-    session.dateHash = this.dateHash(session.date);
+    session.dateHash = DateHash.fromDate(session.date);
 
     let id = this.db.createDocument(session);
 
@@ -40,7 +46,7 @@ export class SessionRepo {
   static allByDate(date: Date): Session[] {
     return this.db.query({
       select: [],
-      where: [{property: 'dateHash', comparison: 'equalTo', value: this.dateHash(date)}]
+      where: [{property: 'dateHash', comparison: 'equalTo', value: DateHash.fromDate(date)}]
     });
   }
 
@@ -48,12 +54,26 @@ export class SessionRepo {
     return this.db.query({ select: [], where: [{property, comparison: 'equalTo', value}]});
   }
 
-  static dateHash(date: Date): number {
-    let day = date.getDay() * 1_000000;
-    let month = date.getMonth() * 1_0000;
-    let year = date.getFullYear();
+  static lastSessions(session: Session, amount: number): SessionData[] {
+    return this.db.query({
+      select: ['reps', 'sets', 'dateHash'],
+      where: [
+        {property: 'exercise.name', comparison: 'equalTo', value: session.exercise.name},
+        {property: 'dateHash', comparison: 'notEqualTo', value: session.dateHash, logical: QueryLogicalOperator.AND},
+      ],
+      order: [{property: 'dateHash', direction: 'desc'}],
+      limit: amount,
+    });
+  }
 
-    return year + day + month;
+  static destroy() { 
+    this.db.removeDatabaseChangeListener(() => {});
+    this.db.destroyDatabase(); 
+
+    this.db = new CouchBase(this.dbName);
+    this.createListener();
+    let id = this.db.createDocument(Session.of(new Date(), {name: 'temp', type: 0}, 0, 0));
+    this.del(id);
   }
 }
 

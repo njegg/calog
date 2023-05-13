@@ -9,8 +9,6 @@
   import ExerciseList from './ExerciseList.svelte';
   import NavigationBar from '../common/NavigationBar.svelte';
   import { SessionRepo } from '~/persistance/db';
-    import { onMount } from 'svelte';
-    import Settings from '../settings/Settings.svelte';
 
   enum Selection {
     EXERCISE, SETS, REPS
@@ -52,7 +50,7 @@
     }
   };
   
-  function onTap(event: Event) {
+  function onTap(event: any) {
     selectedExercise = event.detail.exercise;
     nextSelection();
   }
@@ -93,8 +91,10 @@
         if (selectedExercise) {
           let session: Session = Session.of(new Date(), selectedExercise, +reps, +sets);
 
-          if (!SessionRepo.add(session))
-            throw "db add brokey"
+          if (!SessionRepo.add(session)) {
+              console.error('db broke')
+          }
+
         } else {
           throw 'how does throw work?' // TODO
         }

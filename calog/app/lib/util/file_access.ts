@@ -17,11 +17,13 @@ export function writeToPickedFile(fileName: string, data: any) {
 // https://developer.android.com/training/data-storage/shared/documents-files#edit
 app.android.on(app.AndroidApplication.activityResultEvent, (args: any) => {
     if (args.requestCode == CREATE_FILE_AND_WRITE_REQUEST) {
-      let uri: java.net.URI = args.intent.getData();
+      if (args.intent) {
+        let uri: java.net.URI = args.intent.getData();
 
-      writeBytesToUri(uri, global_data);
+        writeBytesToUri(uri, global_data);
 
-      global_data = [];
+        global_data = [];
+      }
     } else {
       throw 'activity failed';
     }

@@ -8,8 +8,8 @@
   text={text}
   backgroundColor={backgroundColor}
 
-  width={40}
-  height={40}
+  width={29}
+  height={20}
   textAlignment='center'
   borderRadius='100'
   marginLeft={15}

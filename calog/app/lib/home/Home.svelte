@@ -1,61 +1,100 @@
 <script lang='ts'>
-  import { Template } from "svelte-native/components";
-  import SessionCard from "./SessionCard.svelte";
-  import NavigationBar from "~/lib/common/NavigationBar.svelte";
-  import { SessionRepo } from "~/persistance/db";
-    import { selectedSession } from "../selectedSessionCardStore";
+import { Template } from "svelte-native/components";
+import SessionCard from "./SessionCard.svelte";
+import NavigationBar from "~/lib/common/NavigationBar.svelte";
+import { SessionRepo } from "~/persistance/db";
+import { Session } from "~/persistance/model/session";
+import { selectedSession } from "../selectedSessionCardStore";
+import { DateHash } from "../util/date_hash";
+    import { ListView } from "tns-core-modules";
 
-  const dayInMS = 24 * 60 * 60 * 1000;
+const dayInMS = 24 * 60 * 60 * 1000;
 
-  $: date = new Date();
-  $: isDatePickerVisible = false;
-  $: sessions = SessionRepo.allByDate(date);
+let date = new Date();
+let dateHash = DateHash.fromDate(date);
+let todayHash = dateHash;
+let sessionCache: Map<number, Session[]> = createSessionCache();
 
-  $: {
-    date;
-    selectedSession.update(_ => undefined);
+let sessions: Session[] = [];
+
+$: {
+  dateHash = DateHash.fromDate(date);
+
+  if (dateHash > todayHash) { // no time travel
+    date = new Date();
   }
 
-  // TODO: do some caching for sessions
-  SessionRepo.onChangeListener(() => {
-    sessions = SessionRepo.allByDate(date);
-  })
+  // Unselect the one selected for deleting
+  selectedSession.update(_ => undefined);
 
-  function next() {
-    if (isDatePickerVisible) {
-      isDatePickerVisible = false;
-    } else {
-      let nextDay = date.getTime() + dayInMS;
+  updateSessionCache();
+}
 
-      if (nextDay < Date.now()) {
-        date.setTime(nextDay);
-        date = date;
-      }
-    }
+function updateSessionCache() {
+  let cached = sessionCache.get(dateHash);
+
+  if (!cached) {
+    cached = SessionRepo.allBy('dateHash', dateHash);
+    sessionCache.set(dateHash, cached);
   }
 
-  function prev() {
-    if (isDatePickerVisible) {
-      isDatePickerVisible = false;
-      date = new Date();
-    } else {
-      let prevDay = date.getTime() - dayInMS
-        date.setTime(prevDay);
-      date = date;
-    }
+  sessions = cached;
+}
+
+SessionRepo.onChangeListener(() => {
+  sessionCache = createSessionCache();
+  sessions = sessionCache.get(dateHash) || [];
+});
+
+function createSessionCache(): Map<number, Session[]> {
+  let cache = new Map<number, Session[]>();
+
+  let hash = DateHash.fromDate(date);
+  let todayHash = DateHash.fromDate(new Date());
+
+  cache.set(hash, SessionRepo.allBy('dateHash', hash));
+
+  if (hash != todayHash) {
+    cache.set(todayHash, SessionRepo.allBy('dateHash', todayHash));
   }
 
-  function datePickerTap() {
-    isDatePickerVisible = !isDatePickerVisible;
+  return cache;
+}
+
+
+$: isDatePickerVisible = false;
+
+function next() {
+  if (isDatePickerVisible) {
+    isDatePickerVisible = false;
+  } else {
+    date.setTime(date.getTime() + dayInMS);
+    date = date;
   }
+}
 
-  function deleteSession(event: Event) {
-    let id: string = event.detail.id;
+function prev() {
+  if (isDatePickerVisible) {
+    isDatePickerVisible = false;
+    date = new Date();
+  } else {
+    let prevDay = date.getTime() - dayInMS;
+    date.setTime(prevDay);
+    date = date;
+  }
+}
 
-    // Instantly delete from ui, db refresh from event takes some time
-    sessions = sessions.filter(s => s.id != id); 
-    SessionRepo.del(id);
-   }
+function datePickerTap() {
+  isDatePickerVisible = !isDatePickerVisible;
+}
+
+function deleteSession(event: any) {
+  let id: string = event.detail.id;
+
+  // Instantly delete from ui, db refresh from event takes some time
+  sessions = sessions.filter(s => s.id != id);
+  SessionRepo.del(id);
+}
 </script>
 
 
@@ -63,15 +102,19 @@
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <listView
-    items={sessions}
-    borderColor='#000'
-    separatorColor='rgb(0,0,0,0)'
-  >
-    <Template let:item>
-      <SessionCard session={item} on:delete={deleteSession} />
-    </Template>
-  </listView>
+  <scrollView >
+    <flexboxLayout
+      flexDirection='column'
+    >
+      <label height={250} />
+      {#each sessions as item}
+          <SessionCard
+            session={item}
+            on:delete={deleteSession}
+          />
+      {/each}
+    </flexboxLayout>
+  </scrollView>
 
   {#if isDatePickerVisible }
     <datePicker

@@ -4,8 +4,13 @@
   import CircleButton from "~/lib/common/CircleButton.svelte";
   import { Session } from "~/persistance/model/session";
   import { createEventDispatcher } from "svelte";
+  import { SessionData, SessionRepo } from "~/persistance/db";
+  import SessionCardData from "./SessionCardData.svelte";
 
   export let session: Session;
+
+  // TODO: undefined dateHash
+  let sessionData: SessionData = {reps: session.reps, sets: session.sets, dateHash: session.dateHash || 0};
 
   // TODO: more efficient way to this, move to parent?
   $: confirmDelete = false;
@@ -22,10 +27,19 @@
 
     dispatch('delete', {id: session.id});
   }
+
+
+  let showMore = false;
+  let lastSessionsData: SessionData[] = [];
+
+  const showMoreToggle = () => {
+    lastSessionsData = showMore ? [] : SessionRepo.lastSessions(session, 5);
+    showMore = !showMore
+  }
 </script>
 
-<Card>
-  <flexboxLayout flexGrow={1}>
+<Card margin={8}>
+  <flexboxLayout flexGrow={1} on:tap={showMoreToggle}>
     <label 
       text={session.exercise.name}
       flexGrow={1}
@@ -46,21 +60,26 @@
     />
   </flexboxLayout>
   
-  <flexboxLayout
-    flexGrow={1}
+  <stackLayout
     flexWrapBefore={true}
+    class:showMore
+    marginTop={10}
   >
-    <label 
-      text={session.sets + ' x ' + session.reps}
-      color='#ebbcba'
-      borderRadius={100}
-      borderColor='#ebbcba'
-      borderWidth={1}
-      padding='4 10'
-      textAlignment='center'
-    />
-  </flexboxLayout>
+    <SessionCardData data={sessionData} bind:showMore />
+
+    {#if showMore}
+      {#each lastSessionsData as data }
+        <SessionCardData data={data} bind:showMore />
+      {/each}
+    {/if}
+  </stackLayout>
 </Card>
 
 <style>
+  .showMore {
+    padding: 2 4;
+    border-color: #ebbcba;
+    border-width: 1;
+    border-radius: 20;
+  }
 </style>

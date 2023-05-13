@@ -1,9 +1,5 @@
 <script lang='ts'>
-  import { Template } from "svelte-native/components";
-  import { Exercise } from '~/persistance/model/exercise'
-  import ExerciseCard from "./ExerciseCard.svelte";
-
-  export let exercises: Exercise[];
+  export let cards: Exercise[];
 </script>
 
 <listView
