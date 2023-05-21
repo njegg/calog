@@ -1,17 +1,21 @@
 <script lang='ts'>
-  export let backgroundColor: string;
+  export let backgroundColor: string = "#1f1d2e";
+  export let color: string = "#908caa";
   export let text: string;
+  export let width: number = 30;
+  export let height: number = 30;
 </script>
 
-<label
+<button
   on:tap
-  text={text}
+  width={width}
+  height={height}
   backgroundColor={backgroundColor}
+  text={text}
+  color={color}
 
-  width={29}
-  height={20}
   textAlignment='center'
-  borderRadius='100'
-  marginLeft={15}
+  borderRadius={100}
+  minWidth={0}
 />
 

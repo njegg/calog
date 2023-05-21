@@ -16,5 +16,8 @@
         <item name="android:textColorPrimary">@color/rose</item>
         <item name="android:textSize">20sp</item>
         <item name="android:colorControlNormal">@color/rose</item>
+
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 </resources>

@@ -1,56 +1,69 @@
 <script lang='ts'>
-  import { ExerciseRepo, SessionRepo } from "~/persistance/db";
-  import { writeToPickedFile } from "../util/file_access";
-  import Card from "../common/Card.svelte";
-  import { generate } from "~/persistance/test/test_data_generation";
 
-  function backupSessions(): void {
-    writeToPickedFile('calog_sessions_data.json', SessionRepo.all());
+import CustomButton from "../common/CustomButton.svelte";
+import NavigationBar from "../common/NavigationBar.svelte";
+import { fuzzyMatch } from "../search/fuzzyMatch";
+import { settingsCommands } from "./settings";
+
+$: commands = settingsCommands;
+
+let textField: any;
+
+function onTextChange(event: any) {
+  let text = event.value;
+
+  commands = text == '' ?
+    settingsCommands :
+    settingsCommands.filter(c => fuzzyMatch(text, c.name));
+}
+
+function prev() {
+  setInput('');
+}
+
+function next() {
+  if (commands.length) {
+    commands[commands.length -1].execute() 
   }
+}
 
-  function generateTestData(): void {
-    let start = new Date('2023/04/13');
-    let end = new Date();
+function setInput(to: string) {
+    textField.nativeView.text = to;
+    textField.nativeView.setSelection(to.length);
+    setTimeout(() => textField.nativeElement.focus(), 0);
 
-    let generatedData = generate(start, end, 2, ExerciseRepo.all()[0]);
-
-    let added = generatedData.map(s => SessionRepo.add(s));
-
-    if (!added.every(e => e)) {
-      console.error('Something went wrong:');
-      console.error(generatedData.filter((_, i) => !added[i]));
-    }
-  }
-
-  function removeTestData(): void {
-    SessionRepo.destroy();
-  }
-
-  function testButton() {
-    console.log('ouh'); 
-  }
+    onTextChange({value: ''});
+}
 </script>
 
 <flexboxLayout
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <Card margin='8 0'>
-    <label text='Export Sessions' on:tap={backupSessions} />
-  </Card>
+  {#each commands as command}
+    <CustomButton on:tap={command.execute} text={command.name} />
+  {/each}
+    
+  <NavigationBar
+    prev={prev}
+    next={next}
+  >
+    <textField
+      bind:this={textField}
+      flexGrow={1}
 
-  <Card margin='8 0'>
-    <label text='Generate test data' on:tap={generateTestData} />
-  </Card>
+      on:textChange={onTextChange}
+      on:returnPress={next}
 
-  <Card margin='8 0'>
-    <label text='Remove all data' on:tap={removeTestData} />
-  </Card>
+      editable='true'
+      returnKeyType='next'
 
-  <Card margin='8 0'>
-    <label text='Test Button' on:tap={testButton} />
-  </Card>
-
+      textAlignment='center'
+      fontFamily='monospace'
+      fontSize='20rem'
+      borderWidth='0'
+    />
+  </NavigationBar>
 </flexboxLayout>
 
 <style>

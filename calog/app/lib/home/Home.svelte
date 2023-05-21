@@ -1,12 +1,10 @@
 <script lang='ts'>
-import { Template } from "svelte-native/components";
 import SessionCard from "./SessionCard.svelte";
 import NavigationBar from "~/lib/common/NavigationBar.svelte";
 import { SessionRepo } from "~/persistance/db";
 import { Session } from "~/persistance/model/session";
 import { selectedSession } from "../selectedSessionCardStore";
 import { DateHash } from "../util/date_hash";
-    import { ListView } from "tns-core-modules";
 
 const dayInMS = 24 * 60 * 60 * 1000;
 

@@ -1,15 +1,19 @@
 <script lang="ts">
-  import { ExerciseRepo } from "~/persistance/db";
-  import Home from "./home/Home.svelte";
-  import Search from "./search/Search.svelte";
-  import Settings from "./settings/Settings.svelte";
 
-  let theme = {
-    background: "#191724",
-    text: "#e0def4",
-  };
+import { ExerciseRepo } from "~/persistance/db";
+import Home from "./home/Home.svelte";
+import Search from "./search/Search.svelte";
+import FuzzyCommander from "./command/FuzzyCommander.svelte";
+import { settingsCommands } from "./settings/settings";
+    import SearchNew from "./search/SearchNew.svelte";
 
-  let exercises = ExerciseRepo.all();
+let theme = {
+  background: "#191724",
+  text: "#e0def4",
+};
+
+let exercises = ExerciseRepo.all();
+
 </script>
 
 <page
@@ -21,6 +25,8 @@
     font-family: monospace;
   "
 >
+  <label text="yes"/>
+
   <tabView
     backgroundColor="{theme.background}"
     androidTabsPosition="bottom"
@@ -40,14 +46,14 @@
       title="fuzzy"
       style="text-transform: lowercase;"
     >
-      <Search exercises="{exercises}" />
+      <SearchNew exercises="{exercises}" />
     </tabViewItem>
 
     <tabViewItem
       title="settings"
       style="text-transform: lowercase;"
     >
-      <Settings />
+      <label text='a'/>
     </tabViewItem>
   </tabView>
 </page>

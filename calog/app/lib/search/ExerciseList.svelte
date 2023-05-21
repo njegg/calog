@@ -9,7 +9,7 @@
 <listView
   items={exercises}
   borderColor='#000'
-  separatorColor='rgb(0,0,0,0)'
+  separatorColor='rgba(0,0,0,0)'
 >
   <Template let:item>
     <ExerciseCard exercise={item} on:tap/>

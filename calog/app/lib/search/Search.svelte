@@ -1,156 +1,160 @@
 <script lang='ts'>
-  import { TextField } from '@nativescript/core';
-  import { PropertyChangeData } from 'tns-core-modules';
-  import { Exercise } from '~/persistance/model/exercise';
-  import { KeyboardType } from '~/../types/keyboardType';
-  import { fuzzyMatch } from './fuzzyMatch';
-  import { Session } from '~/persistance/model/session';
-  import AddSessionModal from './AddSessionModal.svelte';
-  import ExerciseList from './ExerciseList.svelte';
-  import NavigationBar from '../common/NavigationBar.svelte';
-  import { SessionRepo } from '~/persistance/db';
 
-  enum Selection {
-    EXERCISE, SETS, REPS
-  };
+import { TextField } from '@nativescript/core';
+import { PropertyChangeData } from 'tns-core-modules';
+import { Exercise } from '~/persistance/model/exercise';
+import { KeyboardType } from '~/../types/keyboardType';
+import { fuzzyMatch } from './fuzzyMatch';
+import { Session } from '~/persistance/model/session';
+import AddSessionModal from './AddSessionModal.svelte';
+import ExerciseList from './ExerciseList.svelte';
+import NavigationBar from '../common/NavigationBar.svelte';
+import { SessionRepo } from '~/persistance/db';
 
-  export let exercises: Exercise[];
+// TODO: Rewrite this whole thing
 
-  $: searchResults = exercises;
-  $: searchString = '';
-  $: input = '';
+enum Selection {
+  EXERCISE, SETS, REPS
+};
 
-  $: reps = '';
-  $: sets = '';
+export let exercises: Exercise[];
 
-  $: selection = Selection.EXERCISE;
-  $: textField = new TextField();
+$: searchResults = exercises;
+$: searchString = '';
+$: input = '';
 
-  let keyboardType: KeyboardType = 'url';
-  let selectedExercise: Exercise;
+$: reps = '';
+$: sets = '';
 
-  function updateSearchResults() {
-      if (input == '') {
-        searchResults = exercises;
-      } else {
-        searchResults = exercises.filter(e => fuzzyMatch(searchString, e.name))
-      }
-  }
+$: selection = Selection.EXERCISE;
+let textField: any;
 
-  function onTextChange(event: PropertyChangeData) {
-    input = event.value;
+let keyboardType: KeyboardType = 'url';
+let selectedExercise: Exercise;
 
-    if (selection == Selection.EXERCISE) {
-      searchString = input;
-      updateSearchResults();
-    } else if (selection == Selection.SETS) {
-      sets = input;
+function updateSearchResults() {
+    if (input == '') {
+      searchResults = exercises;
     } else {
-      reps = input;
+      searchResults = exercises.filter(e => fuzzyMatch(searchString, e.name))
     }
-  };
-  
-  function onTap(event: any) {
-    selectedExercise = event.detail.exercise;
-    nextSelection();
+}
+
+function onTextChange(event: PropertyChangeData) {
+  input = event.value;
+
+  if (selection == Selection.EXERCISE) {
+    searchString = input;
+    updateSearchResults();
+  } else if (selection == Selection.SETS) {
+    sets = input;
+  } else {
+    reps = input;
   }
+};
 
-  function returnPress() {
-    if (selection == Selection.EXERCISE) {
-      let exercisesFound = searchResults.length;
-      if (!exercisesFound) return;
+function onTap(event: any) {
+  selectedExercise = event.detail.exercise;
+  nextSelection();
+}
 
-      selectedExercise =  searchResults[exercisesFound - 1];
-    } 
+function returnPress() {
+  if (selection == Selection.EXERCISE) {
+    let exercisesFound = searchResults.length;
+    if (!exercisesFound) return;
 
-    nextSelection();
-  }
+    selectedExercise =  searchResults[exercisesFound - 1];
+  } 
 
-  function nextSelection() {
-    switch (selection) {
-      case Selection.EXERCISE: {
-        selection = Selection.SETS;
+  nextSelection();
+}
 
-        keyboardType = 'integer';
-        input = '';
+function nextSelection() {
+  switch (selection) {
+    case Selection.EXERCISE: {
+      selection = Selection.SETS;
 
-        break;
-      }
-      case Selection.SETS: {
-        selection = Selection.REPS
-        keyboardType = 'integer';
+      keyboardType = 'integer';
+      input = '';
 
-        setInput(reps);
+      break;
+    }
+    case Selection.SETS: {
+      selection = Selection.REPS
+      keyboardType = 'integer';
 
-        break;
-      }
-      case Selection.REPS: {
-        selection = Selection.EXERCISE;
-        keyboardType = 'url';
+      setInput(reps);
 
-        if (selectedExercise) {
-          let session: Session = Session.of(new Date(), selectedExercise, +reps, +sets);
+      break;
+    }
+    case Selection.REPS: {
+      selection = Selection.EXERCISE;
+      keyboardType = 'url';
 
-          if (!SessionRepo.add(session)) {
-              console.error('db broke')
-          }
+      if (selectedExercise) {
+        let session: Session = Session.of(new Date(), selectedExercise, +reps, +sets);
 
-        } else {
-          throw 'how does throw work?' // TODO
+        if (!SessionRepo.add(session)) {
+            console.error('db broke')
         }
 
-        reps = '';
-        sets = '';
-
-        setInput('');
-
-        break;
+      } else {
+        throw 'how does throw work?' // TODO
       }
+
+      reps = '';
+      sets = '';
+
+      setInput('');
+
+      break;
     }
   }
+}
 
-  function previousSelection() {
-    switch (selection) {
-      case Selection.EXERCISE: {
-        input = '';
-        searchString = '';
+function previousSelection() {
+  switch (selection) {
+    case Selection.EXERCISE: {
+      input = '';
+      searchString = '';
 
-        setInput(searchString);
+      setInput(searchString);
 
-        break;
-      }
-      case Selection.SETS: {
-        selection = Selection.EXERCISE;
+      break;
+    }
+    case Selection.SETS: {
+      selection = Selection.EXERCISE;
 
-        setInput(searchString);
+      setInput(searchString);
 
-        reps = '';
-        sets = '';
-        keyboardType = 'url';
+      reps = '';
+      sets = '';
+      keyboardType = 'url';
 
-        break;
-      }
-      case Selection.REPS: {
-        selection = Selection.SETS;
+      break;
+    }
+    case Selection.REPS: {
+      selection = Selection.SETS;
 
-        setInput(sets);
-        keyboardType = 'integer';
-        
-        break;
-      }
+      setInput(sets);
+      keyboardType = 'integer';
+      
+      break;
     }
   }
+}
 
-  function setInput(to: string) {
-      input = to;
-      searchString = to;
+function setInput(to: string) {
+    input = to;
+    searchString = to;
 
-      textField.nativeView.text = to;
-      textField.nativeView.setSelection(to.length);
-      setTimeout(() => textField.nativeElement.focus(), 0);
+    textField.nativeView.text = to;
+    textField.nativeView.setSelection(to.length);
+    setTimeout(() => textField.nativeElement.focus(), 0);
 
-      updateSearchResults();
-  }
+    updateSearchResults();
+}
+
 </script>
 
 <flexboxLayout

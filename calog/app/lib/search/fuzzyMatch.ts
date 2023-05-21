@@ -1,4 +1,5 @@
 
+// TODO: check typing 'M'
 export function fuzzyMatch(term: string, str: string): boolean {
   let termLen = term.length;
   if (termLen == 0) return true;
