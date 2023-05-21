@@ -1,19 +1,18 @@
 <script lang='ts'>
-
+import Card from "../common/Card.svelte";
 import { Command } from "./command";
-
 export let command: Command;
-
 </script>
 
-<button
-  on:tap={() => command.exec()}
-  text={command.name}
+<Card margin={0}>
+  <label
+    on:tap={command.exec}
+    text={command.name}
 
-  fontSize={20}
-  borderRadius={20}
-  padding={10}
-  textAlignment='center'
-  minWidth={0}
-/>
+    textWrap='true'
+    flexGrow={1}
+    textAlignment='center'
+  >
+  </label>
+</Card>
 

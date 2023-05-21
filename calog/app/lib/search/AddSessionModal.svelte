@@ -1,17 +1,33 @@
 <script lang='ts'>
-  import { Exercise } from '~/persistance/model/exercise'
-  import SelectableLabel from "../common/SelectableLabel.svelte";
 
-  export let exercise: Exercise;
-  export let sets: string;
-  export let reps: string;
-  export let repsSelected: boolean;
+import { Exercise } from '~/persistance/model/exercise'
+import { Command } from '../command/command';
+import { onMount } from 'svelte';
+
+export let exercise: Exercise;
+
+let textField: any;
+
+$: isShowingStats = false;
+
+onMount(() => setTimeout(() => textField.nativeElement.focus(), 0));
+
+export function exec() {
+  console.log('modal exec ' + exercise.name);
+}
+
+export function undo() {
+  console.log('modal undo' + exercise.name);
+}
+
+export function toggleStats() { isShowingStats = !isShowingStats }
+
 </script>
+
 
 <stackLayout
   backgroundColor='#26233a'
   borderRadius={20}
-  margin={10}
   padding={20}
 >
   <label
@@ -22,11 +38,26 @@
     marginBottom={20}
   />
 
+  {#if isShowingStats}
+    <label
+      text='STATS'
+      borderWidth={1}
+      borderRadius={10}
+      width={100}
+      textAlignment='center'
+      borderColor='#ebbcba'
+    />
+  {/if}
+
   <flexboxLayout>
-    <SelectableLabel
-      selected={repsSelected}
-      bind:text={sets}
-      alt='set'
+    <textField
+      bind:this={textField}
+      borderColor='#ebbcba'
+      borderWidth={1}
+      width={30}
+      fontSize={20}
+      returnKeyType='next'
+      keyboardType='integer'
     />
 
     <label
@@ -36,10 +67,15 @@
       flexGrow={1}
     />
 
-    <SelectableLabel
-      selected={!repsSelected}
-      bind:text={reps}
-      alt='rep'
+    <textField
+      borderColor='#ebbcba'
+      borderWidth={1}
+      width={30}
+      fontSize={20}
+      keyboardType='integer'
+      returnKeyType='next'
+
+      on:returnPress={() => console.log('modal return')}
     />
   </flexboxLayout>
 

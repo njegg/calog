@@ -1,158 +1,80 @@
 <script lang='ts'>
 
-import { TextField } from '@nativescript/core';
-import { PropertyChangeData } from 'tns-core-modules';
 import { Exercise } from '~/persistance/model/exercise';
-import { KeyboardType } from '~/../types/keyboardType';
-import { fuzzyMatch } from './fuzzyMatch';
-import { Session } from '~/persistance/model/session';
-import AddSessionModal from './AddSessionModal.svelte';
-import ExerciseList from './ExerciseList.svelte';
+import { Command } from '../command/command';
+import FuzzyCommander from '../command/FuzzyCommander.svelte';
+import { CommandComponentProps } from '~/../types/commandListItemType';
+import ExerciseCard from './ExerciseCard.svelte';
 import NavigationBar from '../common/NavigationBar.svelte';
-import { SessionRepo } from '~/persistance/db';
+import NavigationBarTextField from '../common/NavigationBarTextField.svelte';
+import AddSessionModal from './AddSessionModal.svelte';
+    import { onMount } from 'svelte';
 
-// TODO: Rewrite this whole thing
-
-enum Selection {
-  EXERCISE, SETS, REPS
-};
 
 export let exercises: Exercise[];
 
-$: searchResults = exercises;
-$: searchString = '';
-$: input = '';
+let commandComponentProps: CommandComponentProps[] = [];
 
-$: reps = '';
-$: sets = '';
+let searchText: string = '';
+let fuzzyCommander: any;
+let navTextField: any;
 
-$: selection = Selection.EXERCISE;
-let textField: any;
-
-let keyboardType: KeyboardType = 'url';
+let exerciseModal: any;
 let selectedExercise: Exercise;
 
-function updateSearchResults() {
-    if (input == '') {
-      searchResults = exercises;
-    } else {
-      searchResults = exercises.filter(e => fuzzyMatch(searchString, e.name))
-    }
+$: isModalOpen = false;
+
+// TODO: maybe onMount
+onMount(() => {
+  exercises.forEach(e => {
+    let command = <Command> {name: e.name, exec: () => {}, undo: undefined};
+    commandComponentProps.push({command, rest: {exercise: e}})
+  });
+});
+
+
+let shouldExecute = true; // By default 
+
+// Called by the event caused by list item
+function setExercise(event: any) {
+  selectedExercise = <Exercise> event.detail.exercise;
+
+  if (shouldExecute) {
+    shouldExecute = false;
+    exec();
+  }
 }
 
-function onTextChange(event: PropertyChangeData) {
-  input = event.value;
+function exec() {
+  if (!isModalOpen) {
+    if (shouldExecute) {
+      shouldExecute = false; // Set guard for the call bellow
+      fuzzyCommander.exec(); // Gets the exercise
+    }
 
-  if (selection == Selection.EXERCISE) {
-    searchString = input;
-    updateSearchResults();
-  } else if (selection == Selection.SETS) {
-    sets = input;
+    shouldExecute = true; // Executed, reset to default
+
+    /* navTextField.updateText(''); */
+
+    isModalOpen = true;
   } else {
-    reps = input;
-  }
-};
-
-function onTap(event: any) {
-  selectedExercise = event.detail.exercise;
-  nextSelection();
-}
-
-function returnPress() {
-  if (selection == Selection.EXERCISE) {
-    let exercisesFound = searchResults.length;
-    if (!exercisesFound) return;
-
-    selectedExercise =  searchResults[exercisesFound - 1];
-  } 
-
-  nextSelection();
-}
-
-function nextSelection() {
-  switch (selection) {
-    case Selection.EXERCISE: {
-      selection = Selection.SETS;
-
-      keyboardType = 'integer';
-      input = '';
-
-      break;
-    }
-    case Selection.SETS: {
-      selection = Selection.REPS
-      keyboardType = 'integer';
-
-      setInput(reps);
-
-      break;
-    }
-    case Selection.REPS: {
-      selection = Selection.EXERCISE;
-      keyboardType = 'url';
-
-      if (selectedExercise) {
-        let session: Session = Session.of(new Date(), selectedExercise, +reps, +sets);
-
-        if (!SessionRepo.add(session)) {
-            console.error('db broke')
-        }
-
-      } else {
-        throw 'how does throw work?' // TODO
-      }
-
-      reps = '';
-      sets = '';
-
-      setInput('');
-
-      break;
-    }
+    exerciseModal.exec();
   }
 }
 
-function previousSelection() {
-  switch (selection) {
-    case Selection.EXERCISE: {
-      input = '';
-      searchString = '';
+function undo() {
+  if (isModalOpen) {
+    exerciseModal.undo();
+    isModalOpen = false;
 
-      setInput(searchString);
-
-      break;
-    }
-    case Selection.SETS: {
-      selection = Selection.EXERCISE;
-
-      setInput(searchString);
-
-      reps = '';
-      sets = '';
-      keyboardType = 'url';
-
-      break;
-    }
-    case Selection.REPS: {
-      selection = Selection.SETS;
-
-      setInput(sets);
-      keyboardType = 'integer';
-      
-      break;
-    }
+  } else {
+    navTextField.updateText('');
   }
 }
 
-function setInput(to: string) {
-    input = to;
-    searchString = to;
-
-    textField.nativeView.text = to;
-    textField.nativeView.setSelection(to.length);
-    setTimeout(() => textField.nativeElement.focus(), 0);
-
-    updateSearchResults();
+function textChange(e: any) {
+  let text = e.value;
+  fuzzyCommander.update(text);
 }
 
 </script>
@@ -161,47 +83,41 @@ function setInput(to: string) {
   justifyContent='flex-end'
   flexDirection='column'
 >
-  {#if selection != Selection.EXERCISE }
-    <AddSessionModal
-      bind:reps
-      bind:sets 
-      repsSelected={selection == Selection.REPS}
+
+  {#if isModalOpen}
+    <AddSessionModal 
+      bind:this={exerciseModal}
       exercise={selectedExercise}
-      on:returnPress={returnPress}
     />
   {:else}
-    <ExerciseList exercises={searchResults} on:tap={onTap}/>
+    <FuzzyCommander
+      bind:this={fuzzyCommander}
+      commandComponentProps={commandComponentProps}
+      componentType={ExerciseCard}
+      on:message={setExercise}
+    />
   {/if}
 
-  <NavigationBar
-    prev={previousSelection}
-    next={returnPress}
-    
-  >
-    <textField
-      bind:this={textField}
-      bind:text={input}
+  <NavigationBar next={exec} prev={undo} >
+    {#if !isModalOpen}
+      <NavigationBarTextField
+        bind:this={navTextField}
+        bind:text={searchText}
+        keyboardType='url'
+        on:returnPress={exec}
+        on:textChange={textChange}
+      />
+    {:else}
+      <button
+        text='Show Stats'
+        color='#908caa'
+        backgroundColor='#21202e'
+        flexGrow={1}
+        fontSize={20}
 
-      id="search-input"
-      flexGrow={1}
-
-      on:textChange={onTextChange}
-      on:returnPress={returnPress}
-
-      editable='true'
-      returnKeyType='next'
-      bind:keyboardType
-
-      textAlignment='center'
-      fontFamily='monospace'
-      fontSize='20rem'
-      borderWidth='0'
-    />
+        on:tap={exerciseModal.toggleStats}
+      />
+    {/if}
   </NavigationBar>
 </flexboxLayout>
 
-<style>
-  #search-input {
-    flex: 1;
-  }
-</style>

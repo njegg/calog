@@ -1,41 +1,32 @@
 <script lang='ts'>
-  import { createEventDispatcher } from "svelte";
-  import { Exercise } from "~/persistance/model/exercise";
-  import Card from "../common/Card.svelte";
 
-  export let exercise: Exercise;
+import { createEventDispatcher, onMount } from "svelte";
+import { Exercise } from "~/persistance/model/exercise";
+import Card from "../common/Card.svelte";
+import { Command } from "../command/command";
 
-  let dispach = createEventDispatcher();
+export let command: Command;
+export let exercise: Exercise;
 
-  function select() {
-    dispach('tap', {exercise});
-  }
+command.exec = select;
 
-  function showStats() {
-    console.log(`${exercise.name} stats`)
-  }
+let dispach = createEventDispatcher();
+
+function select() {
+  dispach('message', {exercise});
+}
+
 </script>
 
-<Card>
+<Card margin={0}}>
   <label
-    on:tap={select}
-    text={exercise.name}
+    on:tap={command.exec}
+    text={command.name}
 
     textWrap='true'
     flexGrow={1}
     textAlignment='center'
   >
   </label>
-
-  <label
-    on:tap={showStats}
-
-    width={40}
-    height={40}
-    text='…'
-    textAlignment='center'
-    borderRadius='100'
-    backgroundColor='#eb6f92'
-  />
 </Card>
 

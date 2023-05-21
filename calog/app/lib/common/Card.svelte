@@ -1,5 +1,5 @@
 <script lang='ts'>
-  export let margin: string | number = 0;
+  export let margin: string | number = 8;
 </script>
 
 <flexboxLayout
@@ -18,3 +18,4 @@
     width: 100%;
   }
 </style>
+

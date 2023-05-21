@@ -3,9 +3,7 @@
 import { ExerciseRepo } from "~/persistance/db";
 import Home from "./home/Home.svelte";
 import Search from "./search/Search.svelte";
-import FuzzyCommander from "./command/FuzzyCommander.svelte";
-import { settingsCommands } from "./settings/settings";
-    import SearchNew from "./search/SearchNew.svelte";
+import Settings from "./settings/Settings.svelte";
 
 let theme = {
   background: "#191724",
@@ -46,14 +44,14 @@ let exercises = ExerciseRepo.all();
       title="fuzzy"
       style="text-transform: lowercase;"
     >
-      <SearchNew exercises="{exercises}" />
+      <Search exercises="{exercises}" />
     </tabViewItem>
 
     <tabViewItem
       title="settings"
       style="text-transform: lowercase;"
     >
-      <label text='a'/>
+      <Settings />
     </tabViewItem>
   </tabView>
 </page>

@@ -23,6 +23,6 @@ export const default_exercises: Exercise[] = [
   { name: "Lunges", type: ExerciseType.LEG },
   { name: "Nordic Curls", type: ExerciseType.LEG },
 
-  { name: "L-sit", type: ExerciseType.CORE },
+  { name: "L-sita", type: ExerciseType.CORE },
 ];
 

@@ -86,7 +86,7 @@ export class ExerciseRepo {
 
     // No exercises, load default to db
     if (!db.query({select: []}).length) {
-      default_exercises.forEach(e => db.createDocument(e)) // TODO: Batch perhaps, didnt work before
+      default_exercises.forEach(e => db.createDocument(e)); // TODO: Batch perhaps, didnt work before
     }
 
     db.close();

@@ -1,59 +1,45 @@
 <script lang='ts'>
-
-import CustomButton from "../common/CustomButton.svelte";
+import { CommandComponentProps } from "~/../types/commandListItemType";
+import CommandCard from "../command/CommandCard.svelte";
+import FuzzyCommander from "../command/FuzzyCommander.svelte";
 import NavigationBar from "../common/NavigationBar.svelte";
-import { fuzzyMatch } from "../search/fuzzyMatch";
 import { settingsCommands } from "./settings";
 
-$: commands = settingsCommands;
-
-let textField: any;
-
-function onTextChange(event: any) {
-  let text = event.value;
-
-  commands = text == '' ?
-    settingsCommands :
-    settingsCommands.filter(c => fuzzyMatch(text, c.name));
-}
-
-function prev() {
-  setInput('');
-}
-
-function next() {
-  if (commands.length) {
-    commands[commands.length -1].execute() 
-  }
-}
-
-function setInput(to: string) {
-    textField.nativeView.text = to;
-    textField.nativeView.setSelection(to.length);
-    setTimeout(() => textField.nativeElement.focus(), 0);
-
-    onTextChange({value: ''});
-}
+let componentProps = settingsCommands.map(command => <CommandComponentProps>{command, rest:{}})
 </script>
+
+<label text='commented' />
+
+<!--
+<FuzzyCommander
+  componentType={CommandCard}
+  commandComponentProps={componentProps}
+/>
 
 <flexboxLayout
   justifyContent='flex-end'
   flexDirection='column'
 >
-  {#each commands as command}
-    <CustomButton on:tap={command.execute} text={command.name} />
-  {/each}
+  <scrollView >
+    <flexboxLayout
+      flexDirection='column'
+    >
+      {#each visibleCommands as {command, rest} (command.name)}
+        <svelte:component this={componentType} command={command} {...rest} on:message />
+      {/each}
+    </flexboxLayout>
+  </scrollView>
     
   <NavigationBar
-    prev={prev}
-    next={next}
+    prev={undo}
+    next={exec}
   >
     <textField
       bind:this={textField}
       flexGrow={1}
 
       on:textChange={onTextChange}
-      on:returnPress={next}
+      on:returnPress={exec}
 
       editable='true'
       returnKeyType='next'
@@ -65,10 +51,5 @@ function setInput(to: string) {
     />
   </NavigationBar>
 </flexboxLayout>
+-->
 
-<style>
-  label {
-    flex-grow: 1;
-    text-align: center;
-  }
-</style>
