@@ -38,9 +38,9 @@
   }
 </script>
 
-<Card margin={8}>
+<Card margin={0}>
   <flexboxLayout flexGrow={1} on:tap={showMoreToggle}>
-    <label 
+    <label
       text={session.exercise.name}
       flexGrow={1}
     />
@@ -59,7 +59,7 @@
       backgroundColor='#eb6f92'
     />
   </flexboxLayout>
-  
+
   <stackLayout
     flexWrapBefore={true}
     class:showMore
