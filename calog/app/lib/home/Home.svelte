@@ -7,6 +7,7 @@ import { Session } from "~/persistance/model/session";
 import { selectedSession } from "../selectedSessionCardStore";
 import { DateHash } from "../util/date_hash";
 import CircleButton from "../common/CircleButton.svelte";
+import { Template } from "svelte-native/components";
 
 const dayInMS = 24 * 60 * 60 * 1000;
 
@@ -17,28 +18,30 @@ let sessionCache: Map<number, Session[]> = createSessionCache();
 
 let sessions: Session[] = [];
 
-$: {
-  dateHash = DateHash.fromDate(date);
+$: { // Date picker update
+  let newDateHash = DateHash.fromDate(date);
 
-  if (dateHash > todayHash) { // no time travel
+  if (newDateHash > todayHash) { // time travel to future
     date = new Date();
+  } else {
+    dateHash = newDateHash;
+
+    // Unselect the one selected for deleting
+    selectedSession.update(_ => undefined);
+
+    fetchNewSessions();
   }
-
-  // Unselect the one selected for deleting
-  selectedSession.update(_ => undefined);
-
-  updateSessionCache();
 }
 
-function updateSessionCache() {
-  let cached = sessionCache.get(dateHash);
+function fetchNewSessions() {
+  let cacheHit = sessionCache.get(dateHash);
 
-  if (!cached) {
-    cached = SessionRepo.allBy('dateHash', dateHash);
-    sessionCache.set(dateHash, cached);
+  if (cacheHit) {
+    sessions = cacheHit
+  } else {
+    sessions = SessionRepo.allBy('dateHash', dateHash);
+    sessionCache.set(dateHash, sessions);
   }
-
-  sessions = cached;
 }
 
 SessionRepo.onChangeListener(() => {
@@ -102,19 +105,19 @@ function deleteSession(event: any) {
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <scrollView>
-    <flexboxLayout
-      justifyContent='flex-end'
-      flexDirection='column'
-    >
-      {#each sessions as session}
-        <SessionCard
-          session={session}
-          on:delete={deleteSession}
-        />
-      {/each}
-    </flexboxLayout>
-  </scrollView>
+  <listView
+    minHeight={0}
+    items={sessions}
+    borderColor='#000'
+    separatorColor='rgba(0,0,0,0)'
+  >
+    <Template let:item>
+      <SessionCard
+        session={item}
+        on:delete={deleteSession}
+      />
+    </Template>
+  </listView>
 
   {#if isDatePickerVisible }
     <datePicker

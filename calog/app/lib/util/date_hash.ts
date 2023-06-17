@@ -1,8 +1,8 @@
 
 export namespace DateHash {
-  const dayInMS = (1000 * 60 * 60 * 24);
+  const dayInMS = 1000 * 60 * 60 * 24;
 
-  export const today = fromDate(new Date());  
+  export const today = fromDate(new Date());
 
   export function fromDate(date: Date): number {
     let year = date.getFullYear() * 10000;
@@ -22,7 +22,7 @@ export namespace DateHash {
   }
 
   export function dayDif(low: number, high: number): number {
-    return (getDate(high).getTime() - getDate(low).getTime()) 
+    return (getDate(high).getTime() - getDate(low).getTime())
            / dayInMS | 0;
   }
 }
