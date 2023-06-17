@@ -3,6 +3,11 @@
 </script>
 
 <page>
-  <label text={msg} />
+  <label
+    text={msg}
+    minHeight={200}
+    padding={20}
+    textWrap={true}
+  />
 </page>
 

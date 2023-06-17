@@ -23,8 +23,6 @@ let exercises = ExerciseRepo.all();
     font-family: monospace;
   "
 >
-  <label text="yes"/>
-
   <tabView
     backgroundColor="{theme.background}"
     androidTabsPosition="bottom"
@@ -33,6 +31,7 @@ let exercises = ExerciseRepo.all();
     selectedTabTextColor='#ebbcba'
     androidSelectedTabHighlightColor='#191724'
   >
+
     <tabViewItem
         title="home"
         style="text-transform: lowercase;"

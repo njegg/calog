@@ -1,23 +1,52 @@
 <script lang='ts'>
 
 import { Exercise } from '~/persistance/model/exercise'
-import { Command } from '../command/command';
-import { onMount } from 'svelte';
+import { createEventDispatcher, onMount } from 'svelte';
+import NavigationBar from '../common/NavigationBar.svelte';
+import NumberInputField from '../common/NumberInputField.svelte';
+import { SessionRepo } from '~/persistance/db';
+import { Session } from '~/persistance/model/session';
+
 
 export let exercise: Exercise;
 
-let textField: any;
+const dispatch = createEventDispatcher();
+
+let firstField: NumberInputField;
+let secondField: NumberInputField;
+
+onMount(() => setTimeout(() => firstField.focus(), 0));
 
 $: isShowingStats = false;
+let isFirstFieldSelected: boolean = true;
 
-onMount(() => setTimeout(() => textField.nativeElement.focus(), 0));
 
-export function exec() {
-  console.log('modal exec ' + exercise.name);
+export function next() {
+  if (isFirstFieldSelected) {
+    isFirstFieldSelected = false;
+    secondField.focus();
+  } else {
+    let sets = firstField.value();
+    let reps = secondField.value();
+
+    if (sets && reps) {
+      SessionRepo.add(Session.of(new Date(), exercise, reps, sets));
+      close();
+    }
+  }
 }
 
-export function undo() {
-  console.log('modal undo' + exercise.name);
+export function prev() {
+  if (isFirstFieldSelected) {
+    close();
+  } else {
+    isFirstFieldSelected = true;
+    firstField.focus();
+  }
+}
+
+function close() {
+    dispatch("close");
 }
 
 export function toggleStats() { isShowingStats = !isShowingStats }
@@ -43,21 +72,16 @@ export function toggleStats() { isShowingStats = !isShowingStats }
       text='STATS'
       borderWidth={1}
       borderRadius={10}
-      width={100}
+      width={80}
       textAlignment='center'
       borderColor='#ebbcba'
     />
   {/if}
 
   <flexboxLayout>
-    <textField
-      bind:this={textField}
-      borderColor='#ebbcba'
-      borderWidth={1}
-      width={30}
-      fontSize={20}
-      returnKeyType='next'
-      keyboardType='integer'
+    <NumberInputField
+      bind:this={firstField}
+      on:returnPress={next}
     />
 
     <label
@@ -67,17 +91,23 @@ export function toggleStats() { isShowingStats = !isShowingStats }
       flexGrow={1}
     />
 
-    <textField
-      borderColor='#ebbcba'
-      borderWidth={1}
-      width={30}
-      fontSize={20}
-      keyboardType='integer'
-      returnKeyType='next'
-
-      on:returnPress={() => console.log('modal return')}
+    <NumberInputField
+      bind:this={secondField}
+      on:returnPress={next}
     />
   </flexboxLayout>
 
 </stackLayout>
+
+<NavigationBar next={next} prev={prev} >
+  <button
+    text='Show Stats'
+    color='#908caa'
+    backgroundColor='#21202e'
+    flexGrow={1}
+    fontSize={20}
+
+    on:tap={toggleStats}
+  />
+</NavigationBar>
 

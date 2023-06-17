@@ -1,10 +1,12 @@
 <script lang='ts'>
+
 import SessionCard from "./SessionCard.svelte";
 import NavigationBar from "~/lib/common/NavigationBar.svelte";
 import { SessionRepo } from "~/persistance/db";
 import { Session } from "~/persistance/model/session";
 import { selectedSession } from "../selectedSessionCardStore";
 import { DateHash } from "../util/date_hash";
+import CircleButton from "../common/CircleButton.svelte";
 
 const dayInMS = 24 * 60 * 60 * 1000;
 
@@ -100,16 +102,16 @@ function deleteSession(event: any) {
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <scrollView >
+  <scrollView>
     <flexboxLayout
+      justifyContent='flex-end'
       flexDirection='column'
     >
-      <label height={250} />
-      {#each sessions as item}
-          <SessionCard
-            session={item}
-            on:delete={deleteSession}
-          />
+      {#each sessions as session}
+        <SessionCard
+          session={session}
+          on:delete={deleteSession}
+        />
       {/each}
     </flexboxLayout>
   </scrollView>
@@ -125,22 +127,18 @@ function deleteSession(event: any) {
     />
   {/if}
 
-  <NavigationBar next={next} prev={prev}
-  >
-    <label
+  <NavigationBar next={next} prev={prev} >
+    <CircleButton
       on:tap={datePickerTap}
 
       text={date.toLocaleDateString()}
       color='#6e6a86'
-      flexGrow={1}
-      textAlignment='center'
+      backgroundColor='#21202e'
+      width={200}
+      fontSize={20}
+      boxShadow='0 10 10 #21202e'
     />
   </NavigationBar>
 
 </flexboxLayout>
 
-<style>
-  datePicker {
-    color: white;
-  }
-</style>
