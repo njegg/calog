@@ -49,7 +49,7 @@
       reps = input;
     }
   };
-  
+
   function onTap(event: any) {
     selectedExercise = event.detail.exercise;
     nextSelection();
@@ -61,7 +61,7 @@
       if (!exercisesFound) return;
 
       selectedExercise =  searchResults[exercisesFound - 1];
-    } 
+    }
 
     nextSelection();
   }
@@ -135,7 +135,7 @@
 
         setInput(sets);
         keyboardType = 'integer';
-        
+
         break;
       }
     }
@@ -160,7 +160,7 @@
   {#if selection != Selection.EXERCISE }
     <AddSessionModal
       bind:reps
-      bind:sets 
+      bind:sets
       repsSelected={selection == Selection.REPS}
       exercise={selectedExercise}
       on:returnPress={returnPress}
@@ -172,7 +172,7 @@
   <NavigationBar
     prev={previousSelection}
     next={returnPress}
-    
+
   >
     <textField
       bind:this={textField}

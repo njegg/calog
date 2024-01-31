@@ -1,4 +1,6 @@
 <script lang='ts'>
+    import CircleButton from "./CircleButton.svelte";
+
   export let next: () => void;
   export let prev: () => void;
 </script>
@@ -10,34 +12,32 @@
     height={60}
     borderRadius={100}
     margin={10}
-    padding={10}
+    padding='5 3'
 >
-  <label
+  <CircleButton
     on:tap={prev}
 
     text='❮'
-    textAlignment='center'
-    color='#6e6a86'
     backgroundColor='#403d52'
+    color='#6e6a86'
 
     width={40}
     height={40}
-    borderRadius={100}
+    fontSize={20}
   />
 
   <slot />
 
-  <label
+  <CircleButton
     on:tap={next}
 
     text='❯'
-    textAlignment='center'
     backgroundColor='#403d52'
     color='#6e6a86'
 
     width={40}
     height={40}
-    borderRadius={100}
+    fontSize={20}
   />
 </flexboxLayout>
 
