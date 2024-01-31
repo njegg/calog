@@ -1,65 +1,66 @@
 <script lang='ts'>
-  import { selectedSession } from "~/lib/selectedSessionCardStore";
-  import Card from "~/lib/common/Card.svelte";
-  import CircleButton from "~/lib/common/CircleButton.svelte";
-  import { Session } from "~/persistance/model/session";
-  import { createEventDispatcher } from "svelte";
-  import { SessionData, SessionRepo } from "~/persistance/db";
-  import SessionCardData from "./SessionCardData.svelte";
+import { selectedSession, selectedDeleteSession } from "~/lib/selectedSessionCardStore";
+import Card from "~/lib/common/Card.svelte";
+import CircleButton from "~/lib/common/CircleButton.svelte";
+import { Session } from "~/persistance/model/session";
+import { createEventDispatcher } from "svelte";
+import { SessionData, SessionRepo } from "~/persistance/db";
+import SessionCardData from "./SessionCardData.svelte";
 
-  export let session: Session;
+export let session: Session;
 
-  // TODO: undefined dateHash
-  let sessionData: SessionData = {reps: session.reps, sets: session.sets, dateHash: session.dateHash || 0};
+const dispatch = createEventDispatcher();
 
-  // TODO: more efficient way to this, move to parent?
-  $: confirmDelete = false;
+let sessionData: SessionData = { reps: session.reps, sets: session.sets, dateHash: session.dateHash || 0 };
 
-  selectedSession.subscribe(x => confirmDelete = x == session.id);
+$: confirmDelete = false;
+$: showMore = false;
 
-  function onXTap() {
-    selectedSession.update(s => session.id == s ? undefined : session.id);
-  }
+selectedSession.subscribe(s => showMore = s == session.id);
+selectedDeleteSession.subscribe(s => confirmDelete = s == session.id);
 
-  const dispatch = createEventDispatcher();
-  function deleteThis() {
-    selectedSession.update(_ => undefined)
+function onXTap() {
+  selectedDeleteSession.update(s => session.id == s ? undefined : session.id);
+}
 
-    dispatch('delete', {id: session.id});
-  }
+function deleteThis() {
+  selectedSession.update(_ => undefined)
+  dispatch('delete', {id: session.id});
+}
 
 
-  let showMore = false;
-  let lastSessionsData: SessionData[] = [];
+let lastSessionsData: SessionData[] = [];
 
-  const showMoreToggle = () => {
-    lastSessionsData = showMore ? [] : SessionRepo.lastSessions(session, 5);
-    showMore = !showMore
-  }
+const toggleSelected = () => {
+  lastSessionsData = showMore ? [] : SessionRepo.lastSessions(session, 5);
+  selectedSession.set(showMore ? undefined : session.id)
+}
+
 </script>
 
 <Card margin={8}>
-  <flexboxLayout flexGrow={1} on:tap={showMoreToggle}>
-    <label 
+  <flexboxLayout flexGrow={1}>
+    <label
+      on:tap={toggleSelected}
       text={session.exercise.name}
       flexGrow={1}
     />
 
-    {#if confirmDelete }
+    {#if confirmDelete && showMore}
       <CircleButton
         on:tap={deleteThis}
-        text='✓'
         backgroundColor='#31748f'
       />
     {/if}
 
-    <CircleButton
-      on:tap={onXTap}
-      text='✕'
-      backgroundColor='#eb6f92'
-    />
+    {#if showMore}
+      <CircleButton
+        on:tap={onXTap}
+        backgroundColor='#eb6f92'
+      />
+    {/if}
   </flexboxLayout>
-  
+
   <stackLayout
     flexWrapBefore={true}
     class:showMore

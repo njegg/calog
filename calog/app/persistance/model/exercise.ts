@@ -17,6 +17,7 @@ export const default_exercises: Exercise[] = [
   { name: "Chin Up", type: ExerciseType.PULL },
   { name: "Bicep Curls", type: ExerciseType.PULL },
   { name: "Muscle Up", type: ExerciseType.PULL },
+  { name: "Front Lever", type: ExerciseType.PULL },
 
   { name: "Squat", type: ExerciseType.LEG },
   { name: "Pistol Squat", type: ExerciseType.LEG },

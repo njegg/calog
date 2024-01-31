@@ -20,12 +20,12 @@ $: {
 
   if (dateHash > todayHash) { // no time travel
     date = new Date();
+  } else {
+    // Unselect the one selected for deleting
+    selectedSession.update(_ => undefined);
+
+    updateSessionCache();
   }
-
-  // Unselect the one selected for deleting
-  selectedSession.update(_ => undefined);
-
-  updateSessionCache();
 }
 
 function updateSessionCache() {
@@ -93,6 +93,7 @@ function deleteSession(event: any) {
   sessions = sessions.filter(s => s.id != id);
   SessionRepo.del(id);
 }
+
 </script>
 
 
@@ -100,16 +101,17 @@ function deleteSession(event: any) {
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <scrollView >
+  <scrollView>
     <flexboxLayout
       flexDirection='column'
+      justifyContent='flex-end'
     >
-      <label height={250} />
+      <label height={200} />
       {#each sessions as item}
-          <SessionCard
-            session={item}
-            on:delete={deleteSession}
-          />
+        <SessionCard
+          session={item}
+          on:delete={deleteSession}
+        />
       {/each}
     </flexboxLayout>
   </scrollView>

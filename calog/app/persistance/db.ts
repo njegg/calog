@@ -66,9 +66,9 @@ export class SessionRepo {
     });
   }
 
-  static destroy() { 
+  static destroy() {
     this.db.removeDatabaseChangeListener(() => {});
-    this.db.destroyDatabase(); 
+    this.db.destroyDatabase();
 
     this.db = new CouchBase(this.dbName);
     this.createListener();
