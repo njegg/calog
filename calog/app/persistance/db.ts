@@ -4,7 +4,7 @@ import { Exercise, default_exercises } from './model/exercise'
 import { DateHash } from '~/lib/util/date_hash';
 
 type ListenerAction = () => void;
-export type SessionData = {reps: number, sets: number, dateHash: number};
+export type SessionData = { reps: number, sets: number, dateHash: number, note: string };
 
 export class SessionRepo {
   private static dbName: string = 'sessions'
@@ -56,7 +56,7 @@ export class SessionRepo {
 
   static lastSessions(session: Session, amount: number): SessionData[] {
     return this.db.query({
-      select: ['reps', 'sets', 'dateHash'],
+      select: ['reps', 'sets', 'dateHash', 'note'],
       where: [
         {property: 'exercise.name', comparison: 'equalTo', value: session.exercise.name},
         {property: 'dateHash', comparison: 'notEqualTo', value: session.dateHash, logical: QueryLogicalOperator.AND},

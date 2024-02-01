@@ -11,7 +11,7 @@ export let session: Session;
 
 const dispatch = createEventDispatcher();
 
-let sessionData: SessionData = { reps: session.reps, sets: session.sets, dateHash: session.dateHash || 0 };
+let sessionData: SessionData = { reps: session.reps, sets: session.sets, dateHash: session.dateHash || 0, note: session.note };
 
 $: confirmDelete = false;
 $: showMore = false;
@@ -39,47 +39,59 @@ const toggleSelected = () => {
 </script>
 
 <Card margin={8}>
-  <flexboxLayout flexGrow={1}>
-    <label
-      on:tap={toggleSelected}
-      text={session.exercise.name}
-      flexGrow={1}
-    />
-
-    {#if confirmDelete && showMore}
-      <CircleButton
-        width={25}
-        height={25}
-        margin={3}
-        on:tap={deleteThis}
-        backgroundColor='#31748f'
-      />
-    {/if}
-
-    {#if showMore}
-      <CircleButton
-        width={25}
-        height={25}
-        margin='3 0 3 20'
-        on:tap={onXTap}
-        backgroundColor='#eb6f92'
-      />
-    {/if}
-  </flexboxLayout>
-
-  <stackLayout
-    flexWrapBefore={true}
-    class:showMore
-    marginTop={10}
+  <flexboxLayout
+    flexDirection='column'
   >
-    <SessionCardData data={sessionData} bind:showMore />
+    <flexboxLayout flexGrow={1}>
+      <label
+        on:tap={toggleSelected}
+        text={session.exercise.name}
+        flexGrow={1}
+      />
 
-    {#if showMore}
-      {#each lastSessionsData as data }
-        <SessionCardData data={data} bind:showMore />
-      {/each}
+      {#if confirmDelete && showMore}
+        <CircleButton
+          width={25}
+          height={25}
+          margin={3}
+          on:tap={deleteThis}
+          backgroundColor='#31748f'
+        />
+      {/if}
+
+      {#if showMore}
+        <CircleButton
+          width={25}
+          height={25}
+          margin='3 0 3 20'
+          on:tap={onXTap}
+          backgroundColor='#eb6f92'
+        />
+      {/if}
+    </flexboxLayout>
+
+    {#if session.note?.length > 0}
+      <label
+        text={session.note}
+        color='#6e6a86'
+        fontSize={16}
+      />
     {/if}
-  </stackLayout>
+
+    <stackLayout
+      flexWrapBefore={true}
+      class:showMore
+      marginTop={10}
+    >
+      <SessionCardData data={sessionData} bind:showMore />
+
+      {#if showMore}
+        {#each lastSessionsData as data }
+          <SessionCardData data={data} bind:showMore />
+        {/each}
+      {/if}
+    </stackLayout>
+  </flexboxLayout>
 </Card>
 
 <style>
