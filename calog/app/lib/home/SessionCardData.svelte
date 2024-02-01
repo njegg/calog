@@ -16,7 +16,6 @@
 
 <flexboxLayout
   width='100%'
-  class:showMore
   paddingRight={8}
 >
   <label
@@ -31,6 +30,7 @@
 
   {#if showMore}
     <label
+      class:showMore
       text={text}
       color='#6e6a86'
       flexGrow={1}

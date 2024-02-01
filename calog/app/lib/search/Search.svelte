@@ -9,10 +9,7 @@
   import ExerciseList from './ExerciseList.svelte';
   import NavigationBar from '../common/NavigationBar.svelte';
   import { SessionRepo } from '~/persistance/db';
-
-  enum Selection {
-    EXERCISE, SETS, REPS
-  };
+  import { SessionModalState } from './sessionModalSelection';
 
   export let exercises: Exercise[];
 
@@ -22,8 +19,9 @@
 
   $: reps = '';
   $: sets = '';
+  $: note = '';
 
-  $: selection = Selection.EXERCISE;
+  $: selection = SessionModalState.EXERCISE;
   $: textField = new TextField();
 
   let keyboardType: KeyboardType = 'url';
@@ -40,13 +38,15 @@
   function onTextChange(event: PropertyChangeData) {
     input = event.value;
 
-    if (selection == Selection.EXERCISE) {
+    if (selection == SessionModalState.EXERCISE) {
       searchString = input;
       updateSearchResults();
-    } else if (selection == Selection.SETS) {
+    } else if (selection == SessionModalState.SETS) {
       sets = input;
-    } else {
+    } else if (selection == SessionModalState.REPS) {
       reps = input;
+    } else {
+      note = input;
     }
   };
 
@@ -56,7 +56,7 @@
   }
 
   function returnPress() {
-    if (selection == Selection.EXERCISE) {
+    if (selection == SessionModalState.EXERCISE) {
       let exercisesFound = searchResults.length;
       if (!exercisesFound) return;
 
@@ -68,28 +68,45 @@
 
   function nextSelection() {
     switch (selection) {
-      case Selection.EXERCISE: {
-        selection = Selection.SETS;
+      case SessionModalState.EXERCISE: {
+        selection = SessionModalState.SETS;
 
         keyboardType = 'integer';
         input = '';
 
         break;
       }
-      case Selection.SETS: {
-        selection = Selection.REPS
+
+      case SessionModalState.SETS: {
+        selection = SessionModalState.REPS
         keyboardType = 'integer';
 
         setInput(reps);
 
         break;
       }
-      case Selection.REPS: {
-        selection = Selection.EXERCISE;
+
+      case SessionModalState.REPS: {
+        selection = SessionModalState.NOTE;
+        keyboardType = 'url';
+
+        setInput(note);
+
+        break;
+      }
+
+      case SessionModalState.NOTE: {
+        selection = SessionModalState.EXERCISE;
         keyboardType = 'url';
 
         if (selectedExercise) {
-          let session: Session = Session.of(new Date(), selectedExercise, +reps, +sets);
+          let session: Session = Session.of(
+            new Date(),
+            selectedExercise,
+            +reps,
+            +sets,
+            note
+          );
 
           if (!SessionRepo.add(session)) {
               console.error('db broke')
@@ -101,6 +118,7 @@
 
         reps = '';
         sets = '';
+        note = '';
 
         setInput('');
 
@@ -111,7 +129,7 @@
 
   function previousSelection() {
     switch (selection) {
-      case Selection.EXERCISE: {
+      case SessionModalState.EXERCISE: {
         input = '';
         searchString = '';
 
@@ -119,8 +137,9 @@
 
         break;
       }
-      case Selection.SETS: {
-        selection = Selection.EXERCISE;
+
+      case SessionModalState.SETS: {
+        selection = SessionModalState.EXERCISE;
 
         setInput(searchString);
 
@@ -130,10 +149,20 @@
 
         break;
       }
-      case Selection.REPS: {
-        selection = Selection.SETS;
+
+      case SessionModalState.REPS: {
+        selection = SessionModalState.SETS;
 
         setInput(sets);
+        keyboardType = 'integer';
+
+        break;
+      }
+
+      case SessionModalState.NOTE: {
+        selection = SessionModalState.REPS;
+
+        setInput(reps);
         keyboardType = 'integer';
 
         break;
@@ -157,11 +186,13 @@
   justifyContent='flex-end'
   flexDirection='column'
 >
-  {#if selection != Selection.EXERCISE }
+  {#if selection != SessionModalState.EXERCISE }
     <AddSessionModal
       bind:reps
       bind:sets
-      repsSelected={selection == Selection.REPS}
+      bind:note
+      bind:state={selection}
+      repsSelected={selection == SessionModalState.REPS}
       exercise={selectedExercise}
       on:returnPress={returnPress}
     />
@@ -172,7 +203,6 @@
   <NavigationBar
     prev={previousSelection}
     next={returnPress}
-
   >
     <textField
       bind:this={textField}

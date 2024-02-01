@@ -82,6 +82,10 @@ function prev() {
   }
 }
 
+function swipe(e: any) {
+  console.log(e);
+}
+
 function datePickerTap() {
   isDatePickerVisible = !isDatePickerVisible;
 }
