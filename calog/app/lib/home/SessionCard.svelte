@@ -48,6 +48,9 @@ const toggleSelected = () => {
 
     {#if confirmDelete && showMore}
       <CircleButton
+        width={25}
+        height={25}
+        margin={3}
         on:tap={deleteThis}
         backgroundColor='#31748f'
       />
@@ -55,6 +58,9 @@ const toggleSelected = () => {
 
     {#if showMore}
       <CircleButton
+        width={25}
+        height={25}
+        margin='3 0 3 20'
         on:tap={onXTap}
         backgroundColor='#eb6f92'
       />
@@ -78,7 +84,6 @@ const toggleSelected = () => {
 
 <style>
   .showMore {
-    padding: 2 4;
     border-color: #ebbcba;
     border-width: 1;
     border-radius: 20;

@@ -3,7 +3,6 @@
   "main": "app/app.ts",
   "version": "1.0.0",
   "private": true,
-
   "dependencies": {
     "@nativescript/core": "~8.5.0",
     "@nativescript/datetimepicker": "^2.1.13",
@@ -12,7 +11,6 @@
     "svelte-native": "~1.0.0",
     "tns-core-modules": "^6.5.27"
   },
-
   "devDependencies": {
     "@nativescript/android": "^8.5.0",
     "@nativescript/preview-cli": "1.0.2",

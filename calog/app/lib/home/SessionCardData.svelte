@@ -19,7 +19,7 @@
   class:showMore
   paddingRight={8}
 >
-  <label 
+  <label
     text={data.sets + ' x ' + data.reps}
     color='#ebbcba'
     borderRadius={100}
