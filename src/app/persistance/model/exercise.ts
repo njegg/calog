@@ -8,6 +8,11 @@ export interface Exercise {
   type: ExerciseType;
 }
 
+export interface ExerciseCompact {
+  n: string,
+  t: number,
+}
+
 export const default_exercises: Exercise[] = [
   { name: "Push Up", type: ExerciseType.PUSH },
   { name: "Handstand", type: ExerciseType.PUSH },
@@ -27,3 +32,8 @@ export const default_exercises: Exercise[] = [
   { name: "L-sit", type: ExerciseType.CORE },
 ];
 
+export namespace ExerciseCompact {
+  export function of(exercise: Exercise): ExerciseCompact {
+    return { n: exercise.name, t: exercise.type.valueOf() };
+  }
+}

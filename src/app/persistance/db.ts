@@ -1,5 +1,5 @@
 import { CouchBase, QueryLogicalOperator } from '@triniwiz/nativescript-couchbase'
-import { Session } from './model/session';
+import { Session, SessionCompact } from './model/session';
 import { Exercise, default_exercises } from './model/exercise'
 import { DateHash } from '~/lib/util/date_hash';
 
@@ -30,9 +30,11 @@ export class SessionRepo {
     return this.db.query({ select: [] });
   }
 
-  static add(session: Session): boolean {
-    session.dateHash = DateHash.fromDate(session.date);
+  static allCompact(): SessionCompact[] {
+    return SessionRepo.all().map(SessionCompact.of)
+  }
 
+  static add(session: Session): boolean {
     let id = this.db.createDocument(session);
 
     if (id) return true // any type ok

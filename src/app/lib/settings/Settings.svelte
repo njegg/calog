@@ -5,11 +5,11 @@
   import { generate } from "~/persistance/test/test_data_generation";
 
   function backupSessions(): void {
-    writeToPickedFile('calog_sessions_data.json', SessionRepo.all());
+    writeToPickedFile('calog_sessions_data.json', SessionRepo.allCompact());
   }
 
   function generateTestData(): void {
-    let start = new Date('2023/04/13');
+    let start = new Date('2023/04/13'); // TODO: dont hardcode
     let end = new Date();
 
     let generatedData = generate(start, end, 2, ExerciseRepo.all()[0]);
@@ -27,7 +27,7 @@
   }
 
   function testButton() {
-    console.log('ouh'); 
+    console.log('ouh');
   }
 </script>
 
