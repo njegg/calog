@@ -3,6 +3,7 @@
   import { writeToPickedFile } from "../util/file_access";
   import Card from "../common/Card.svelte";
   import { generate } from "~/persistance/test/test_data_generation";
+  import { Theme, updateTheme } from "../common/theme";
 
   function backupSessions(): void {
     writeToPickedFile('calog_sessions_data.json', SessionRepo.allCompact());
@@ -29,6 +30,10 @@
   function testButton() {
     console.log('ouh');
   }
+
+  function theme(): void {
+    updateTheme(Theme.ROSE_PINE_DARK);
+  }
 </script>
 
 <flexboxLayout
@@ -49,6 +54,14 @@
 
   <Card margin='8 0'>
     <label text='Test Button' on:tap={testButton} />
+  </Card>
+
+  <Card margin='8 0'>
+    <label text={Theme.getName(Theme.ROSE_PINE_DARK)} on:tap={() => updateTheme(Theme.ROSE_PINE_DARK)} />
+  </Card>
+
+  <Card margin='8 0'>
+    <label text={Theme.getName(Theme.ROSE_PINE_LIGHT)} on:tap={() => updateTheme(Theme.ROSE_PINE_LIGHT)} />
   </Card>
 
 </flexboxLayout>

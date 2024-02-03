@@ -6,8 +6,12 @@ import { Session } from "~/persistance/model/session";
 import { createEventDispatcher } from "svelte";
 import { SessionData, SessionRepo } from "~/persistance/db";
 import SessionCardData from "./SessionCardData.svelte";
+    import { ThemeColors, themeStore } from "../common/theme";
 
 export let session: Session;
+
+let theme: ThemeColors;
+themeStore.subscribe(t => theme = t);
 
 const dispatch = createEventDispatcher();
 
@@ -55,7 +59,7 @@ const toggleSelected = () => {
           height={25}
           margin={3}
           on:tap={deleteThis}
-          backgroundColor='#31748f'
+          backgroundColor={theme.pine}
         />
       {/if}
 
@@ -65,7 +69,7 @@ const toggleSelected = () => {
           height={25}
           margin='3 0 3 20'
           on:tap={onXTap}
-          backgroundColor='#eb6f92'
+          backgroundColor={theme.love}
         />
       {/if}
     </flexboxLayout>
@@ -73,13 +77,14 @@ const toggleSelected = () => {
     {#if session.note?.length > 0}
       <label
         text={session.note}
-        color='#6e6a86'
+        color={theme.muted}
         fontSize={16}
       />
     {/if}
 
     <stackLayout
       flexWrapBefore={true}
+      borderColor={theme.rose}
       class:showMore
       marginTop={10}
     >
@@ -96,7 +101,6 @@ const toggleSelected = () => {
 
 <style>
   .showMore {
-    border-color: #ebbcba;
     border-width: 1;
     border-radius: 20;
   }

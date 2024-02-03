@@ -35,7 +35,7 @@
       }
   }
 
-  function onTextChange(event: PropertyChangeData) {
+  function onTextChange(event: any) {
     input = event.value;
 
     if (selection == SessionModalState.EXERCISE) {
@@ -192,7 +192,6 @@
       bind:sets
       bind:note
       bind:state={selection}
-      repsSelected={selection == SessionModalState.REPS}
       exercise={selectedExercise}
       on:returnPress={returnPress}
     />

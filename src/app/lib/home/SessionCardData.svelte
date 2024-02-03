@@ -1,9 +1,13 @@
 <script lang='ts'>
   import { SessionData } from "~/persistance/db";
   import { DateHash } from "../util/date_hash";
+    import { ThemeColors, themeStore } from "../common/theme";
 
   export let data: SessionData;
   export let showMore: boolean;
+
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
   let today: number = DateHash.today;
   let daysAgo: number = DateHash.dayDif(data.dateHash, today);
@@ -20,9 +24,9 @@
 >
   <label
     text={data.sets + ' x ' + data.reps}
-    color='#ebbcba'
+    color={theme.rose}
     borderRadius={100}
-    borderColor='#ebbcba'
+    borderColor={theme.rose}
     borderWidth={+!showMore}
     padding='4 10'
     textAlignment='center'
@@ -32,7 +36,7 @@
     <label
       class:showMore
       text={text}
-      color='#6e6a86'
+      color={theme.muted}
       flexGrow={1}
       textAlignment='right'
     />

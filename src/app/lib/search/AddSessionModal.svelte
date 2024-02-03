@@ -1,26 +1,28 @@
 <script lang='ts'>
+  import { Exercise } from '~/persistance/model/exercise'
+  import SelectableLabel from "../common/SelectableLabel.svelte";
+  import { SessionModalState } from './sessionModalSelection';
+  import { ThemeColors, themeStore } from '../common/theme';
 
-import { Exercise } from '~/persistance/model/exercise'
-import SelectableLabel from "../common/SelectableLabel.svelte";
-import { SessionModalState } from './sessionModalSelection';
+  export let exercise: Exercise;
+  export let sets: string;
+  export let reps: string;
+  export let note: string;
+  export let state: SessionModalState;
 
-export let exercise: Exercise;
-export let sets: string;
-export let reps: string;
-export let note: string;
-export let state: SessionModalState;
-
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 </script>
 
 
 <stackLayout
-  backgroundColor='#26233a'
+  backgroundColor={theme.baseLight}
   borderRadius={20}
   margin={10}
   padding={20}
 >
   <label
-    color='#ebbcba'
+    color={theme.rose}
     textAlignment='center'
     fontSize={20}
     text={exercise.name}

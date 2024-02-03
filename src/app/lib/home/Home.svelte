@@ -1,12 +1,17 @@
 <script lang='ts'>
+
 import SessionCard from "./SessionCard.svelte";
 import NavigationBar from "~/lib/common/NavigationBar.svelte";
 import { SessionRepo } from "~/persistance/db";
 import { Session } from "~/persistance/model/session";
 import { selectedSession } from "../selectedSessionCardStore";
 import { DateHash } from "../util/date_hash";
+import { ThemeColors, themeStore } from "../common/theme";
 
 const dayInMS = 24 * 60 * 60 * 1000;
+
+let theme: ThemeColors;
+themeStore.subscribe(t => theme = t);
 
 let date = new Date();
 let dateHash = DateHash.fromDate(date);
@@ -126,8 +131,9 @@ function deleteSession(event: any) {
       borderRadius={20}
       height={200}
       minHeight={200}
-      backgroundColor='#26233a'
+      backgroundColor={theme.baseLight}
       margin={8}
+      color={theme.love}
     />
   {/if}
 
@@ -136,7 +142,7 @@ function deleteSession(event: any) {
       on:tap={datePickerTap}
 
       text={date.toLocaleDateString()}
-      color='#6e6a86'
+      color={theme.muted}
       flexGrow={1}
       textAlignment='center'
     />
@@ -144,8 +150,3 @@ function deleteSession(event: any) {
 
 </flexboxLayout>
 
-<style>
-  datePicker {
-    color: white;
-  }
-</style>

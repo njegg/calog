@@ -3,18 +3,18 @@
   import Home from "./home/Home.svelte";
   import Search from "./search/Search.svelte";
   import Settings from "./settings/Settings.svelte";
+  import { ThemeColors, themeStore } from "./common/theme";
+  import { Color } from "@nativescript/core";
 
-  let theme = {
-    background: "#191724",
-    text: "#e0def4",
-  };
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
   let exercises = ExerciseRepo.all();
 </script>
 
 <page
   actionBarHidden={true}
-  androidStatusBarBackground='#191724'
+  androidStatusBarBackground={new Color(theme.baseDark)}
 
   style="
     font-size: 20rem;
@@ -22,12 +22,12 @@
   "
 >
   <tabView
-    backgroundColor="{theme.background}"
+    backgroundColor="{theme.baseDark}"
     androidTabsPosition="bottom"
-    tabTextColor='#6e6a86'
-    tabBackgroundColor='#191724'
-    selectedTabTextColor='#ebbcba'
-    androidSelectedTabHighlightColor='#191724'
+    tabTextColor={theme.muted}
+    tabBackgroundColor={theme.baseDark}
+    selectedTabTextColor={theme.rose}
+    androidSelectedTabHighlightColor={theme.baseDark}
   >
     <tabViewItem
         title="home"
@@ -51,15 +51,4 @@
     </tabViewItem>
   </tabView>
 </page>
-
-
-<style>
-  actionBar page tabViewItem {
-    background: #ff0000;
-  }
-  @font-face {
-      font-family: 'GothamRounded';
-      src: url('../fonts/GothamRounded-Book.otf');
-  }
-</style>
 

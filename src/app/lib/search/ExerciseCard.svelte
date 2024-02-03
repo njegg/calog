@@ -2,8 +2,12 @@
   import { createEventDispatcher } from "svelte";
   import { Exercise } from "~/persistance/model/exercise";
   import Card from "../common/Card.svelte";
+  import { ThemeColors, themeStore } from "../common/theme";
 
   export let exercise: Exercise;
+
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
   let dispach = createEventDispatcher();
 
@@ -30,12 +34,12 @@
   <label
     on:tap={showStats}
 
-    width={40}
-    height={40}
-    text='…'
+    width={30}
+    height={30}
+    margin={5}
     textAlignment='center'
     borderRadius='100'
-    backgroundColor='#eb6f92'
+    backgroundColor={theme.rose}
   />
 </Card>
 

@@ -1,12 +1,16 @@
 <script lang='ts'>
-    import CircleButton from "./CircleButton.svelte";
+  import CircleButton from "./CircleButton.svelte";
+  import { ThemeColors, themeStore } from "./theme";
+
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
   export let next: () => void;
   export let prev: () => void;
 </script>
 
 <flexboxLayout
-    backgroundColor='#21202e'
+    backgroundColor={theme.highlightDark}
 
     minHeight={60}
     height={60}
@@ -18,8 +22,8 @@
     on:tap={prev}
 
     text='❮'
-    backgroundColor='#403d52'
-    color='#6e6a86'
+    backgroundColor={theme.highlightMid}
+    color={theme.muted}
 
     width={40}
     height={40}
@@ -32,8 +36,8 @@
     on:tap={next}
 
     text='❯'
-    backgroundColor='#403d52'
-    color='#6e6a86'
+    backgroundColor={theme.highlightMid}
+    color={theme.muted}
 
     width={40}
     height={40}

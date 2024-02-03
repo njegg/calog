@@ -1,10 +1,15 @@
 <script lang='ts'>
+    import { ThemeColors, themeStore } from "./theme";
+
   export let margin: string | number = 0;
+
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 </script>
 
 <flexboxLayout
-    backgroundColor='#26233a'
-    color='#e0def4'
+    backgroundColor={theme.baseLight}
+    color={theme.text}
     borderRadius={20}
     padding={10}
     margin={margin}
