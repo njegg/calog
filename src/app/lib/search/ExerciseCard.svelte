@@ -20,7 +20,7 @@
   }
 </script>
 
-<Card>
+<Card padding={5} >
   <label
     on:tap={select}
     text={exercise.name}
