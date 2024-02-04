@@ -1,50 +1,61 @@
 <script lang='ts'>
-  import { ExerciseRepo, SessionRepo } from "~/persistance/db";
-  import { writeToPickedFile, pickAndImportUserData } from "../util/file_access";
   import Card from "../common/Card.svelte";
-  import { generate } from "~/persistance/test/test_data_generation";
-  import { Theme, themeStore, updateTheme } from "../common/theme";
-  import { UserData } from "../util/user_data";
+  import { ThemeColors, themeStore } from "../common/theme";
+  import { TextField } from "@nativescript/core";
+  import { settingsCommands } from "./settings";
+  import { fuzzyMatch } from "../search/fuzzyMatch";
+  import NavigationBar from "../common/NavigationBar.svelte";
+  import { Template } from "svelte-native/components";
 
-  let theme: Theme;
-  themeStore.subscribe(t => theme = t.type);
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
-  function backupData(): void {
-    let userData: UserData = {
-      theme,
-      sessions: SessionRepo.allCompact(),
-    };
+  $: commandSearchResults = settingsCommands;
+  $: searchString = '';
+  $: input = '';
 
-    writeToPickedFile(`calog_data-${new Date().toISOString()}.json`, userData);
+  $: textField = <any> new TextField(); // any because the lsp is ass
+
+  function updateSearchResults() {
+      if (input == '') {
+        commandSearchResults = settingsCommands;
+      } else {
+        commandSearchResults = settingsCommands.filter(e => fuzzyMatch(searchString, e.name))
+      }
   }
 
-  function readDataFromJsonFile(): void {
-    pickAndImportUserData();
+  function onTextChange(event: any) {
+    searchString = event.value;
+    updateSearchResults();
+  };
+
+  function execBottomCommand() {
+    let visibleCommandCount = commandSearchResults.length;
+    if (!visibleCommandCount) return;
+
+    let command = commandSearchResults[visibleCommandCount - 1];
+    command.exec();
   }
 
-  function generateTestData(): void {
-    let monthInMs = 1000 * 60 * 60 * 24 * 30;
+  function onReturnPress(): void {
+    execBottomCommand();
 
-    let today = new Date();
-    let start = new Date();
-    start.setTime(today.getTime() - monthInMs);
-
-    let generatedData = generate(start, today, 2, ExerciseRepo.all()[0]);
-
-    let added = generatedData.map(s => SessionRepo.add(s));
-
-    if (!added.every(e => e)) {
-      console.error('Something went wrong:');
-      console.error(generatedData.filter((_, i) => !added[i]));
-    }
+    setTimeout(() => textField.nativeElement.focus(), 0);
   }
 
-  function removeTestData(): void {
-    SessionRepo.destroy();
+  function setInput(to: string) {
+      input = to;
+      searchString = to;
+
+      textField.nativeView.text = to;
+      textField.nativeView.setSelection(to.length);
+      setTimeout(() => textField.nativeElement.focus(), 0);
+
+      updateSearchResults();
   }
 
-  function testButton() {
-    console.log('test butt');
+  function prev(): void {
+    setInput("");
   }
 </script>
 
@@ -52,34 +63,44 @@
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <Card margin='8 0'>
-    <label text='Export Data' on:tap={backupData} />
-  </Card>
 
-  <Card margin='8 0'>
-    <label text='Import Data' on:tap={readDataFromJsonFile} />
-  </Card>
+  <listView
+    items={commandSearchResults}
+    borderColor='#000'
+    separatorColor='rgb(0,0,0,0)'
+  >
+    <Template let:item>
+      <Card padding={5}>
+        <label text={item.name} on:tap={item.exec} />
+      </Card>
+    </Template>
+  </listView>
 
-  <Card margin='8 0'>
-    <label text='Generate test data' on:tap={generateTestData} />
-  </Card>
 
-  <Card margin='8 0'>
-    <label text='Remove all data' on:tap={removeTestData} />
-  </Card>
+  <NavigationBar
+    prev={prev}
+    next={execBottomCommand}
+  >
+    <textField
+      bind:this={textField}
+      bind:text={input}
+      color={theme.text}
 
-  <Card margin='8 0'>
-    <label text='Test Button' on:tap={testButton} />
-  </Card>
+      id="search-input"
+      flexGrow={1}
 
-  <Card margin='8 0'>
-    <label text={Theme.getName(Theme.ROSE_PINE_DARK)} on:tap={() => updateTheme(Theme.ROSE_PINE_DARK)} />
-  </Card>
+      on:textChange={onTextChange}
+      on:returnPress={onReturnPress}
+      returnKeyType='next'
 
-  <Card margin='8 0'>
-    <label text={Theme.getName(Theme.ROSE_PINE_LIGHT)} on:tap={() => updateTheme(Theme.ROSE_PINE_LIGHT)} />
-  </Card>
+      editable='true'
 
+      textAlignment='center'
+      fontFamily='monospace'
+      fontSize='20rem'
+      borderWidth='0'
+    />
+  </NavigationBar>
 </flexboxLayout>
 
 <style>

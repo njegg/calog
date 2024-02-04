@@ -1,6 +1,5 @@
 <script lang='ts'>
   import { TextField } from '@nativescript/core';
-  import { PropertyChangeData } from 'tns-core-modules';
   import { Exercise } from '~/persistance/model/exercise';
   import { KeyboardType } from '~/../types/keyboardType';
   import { fuzzyMatch } from './fuzzyMatch';
@@ -22,7 +21,7 @@
   $: note = '';
 
   $: selection = SessionModalState.EXERCISE;
-  $: textField = new TextField();
+  $: textField = <any> new TextField(); // any because the lsp is ass
 
   let keyboardType: KeyboardType = 'url';
   let selectedExercise: Exercise;

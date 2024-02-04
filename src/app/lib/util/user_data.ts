@@ -13,8 +13,12 @@ export async function importUserData(userData: UserData): Promise<void> {
 
     console.log(`importing ${sessions.length} sessions`);
 
-    for (let s of sessions) {
-      SessionRepo.add(s);
+    let failedAdds = sessions
+      .map(s => SessionRepo.add(s))
+      .reduce((fails, isAdded) => fails += +!isAdded, 0);
+
+    if (failedAdds > 0) {
+      throw new Error(`failed to import ${failedAdds}/${sessions.length} sessions`);
     }
   }
 
