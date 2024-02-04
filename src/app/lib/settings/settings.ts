@@ -36,7 +36,13 @@ function backupData(): void {
     sessions: SessionRepo.allCompact(),
   };
 
-  writeToPickedFile(`calog_data-${new Date().toISOString()}.json`, userData);
+  let fileName = `calog_data-${new Date().toISOString()}.json`;
+
+  if (__DEV__) {
+    fileName = "__DEV__" + fileName;
+  }
+
+  writeToPickedFile(fileName, userData);
 }
 
 function importDataFromFile(): void {
