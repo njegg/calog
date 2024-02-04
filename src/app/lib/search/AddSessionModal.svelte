@@ -39,6 +39,7 @@
     />
 
     <label
+      color={theme.text}
       text='✕'
       fontSize={30}
       textAlignment='center'

@@ -9,8 +9,12 @@
   import NavigationBar from '../common/NavigationBar.svelte';
   import { SessionRepo } from '~/persistance/db';
   import { SessionModalState } from './sessionModalSelection';
+    import { ThemeColors, themeStore } from '../common/theme';
 
   export let exercises: Exercise[];
+
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
   $: searchResults = exercises;
   $: searchString = '';
@@ -207,11 +211,12 @@
       bind:text={input}
 
       id="search-input"
-      flexGrow={1}
 
       on:textChange={onTextChange}
       on:returnPress={returnPress}
 
+      color={theme.text}
+      flexGrow={1}
       editable='true'
       returnKeyType='next'
       bind:keyboardType

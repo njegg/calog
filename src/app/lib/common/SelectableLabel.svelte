@@ -16,6 +16,7 @@
 <label
   on:tap
   text={text == '' ? alt : text}
+  color={theme.text}
   borderColor={selected ? theme.rose : theme.muted }
   width={width}
   fontSize={fontSize}
