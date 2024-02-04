@@ -1,17 +1,44 @@
+import { importUserData, UserData } from "./user_data";
+
 const app = require("tns-core-modules/application");
 const encoder = new TextEncoder();
 
+// TODO: error handling how
+
 const CREATE_FILE_AND_WRITE_REQUEST = 69;
+const PICK_A_FILE_WITH_USER_DATA_AND_IMPORT = 420;
 
-let global_data: number[]; // TODO: better way to pass data?
+let sharedDataBuffer: number[];
 
-export function writeToPickedFile(fileName: string, data: any) {
-  let createAFileIntent = intentToPickCreateFile(fileName);
+// TODO: cant return the file from here because of the fucking event listener, should
+// use a promise or something to return the shared buffer somehow
+export function pickAndImportUserData(): void {
+  let intent = new android.content.Intent(android.content.Intent.ACTION_OPEN_DOCUMENT);
+  intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
+  intent.setType("application/json");
 
-  global_data = anyToBytes(data);
+  try {
+    const activity = app.android.foregroundActivity || app.android.startActivity;
+    activity.startActivityForResult(intent, PICK_A_FILE_WITH_USER_DATA_AND_IMPORT);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-  const activity = app.android.foregroundActivity || app.android.startActivity;
-  activity.startActivityForResult(createAFileIntent, CREATE_FILE_AND_WRITE_REQUEST);
+export function writeToPickedFile(fileName: string, data: any): void {
+  let intent = new android.content.Intent(android.content.Intent.ACTION_CREATE_DOCUMENT);
+  intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
+  intent.setType("application/json");
+  intent.putExtra(android.content.Intent.EXTRA_TITLE, fileName);
+
+  sharedDataBuffer = anyToBytes(data);
+
+  try {
+    const activity = app.android.foregroundActivity || app.android.startActivity;
+    activity.startActivityForResult(intent, CREATE_FILE_AND_WRITE_REQUEST);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 // https://developer.android.com/training/data-storage/shared/documents-files#edit
@@ -19,24 +46,47 @@ app.android.on(app.AndroidApplication.activityResultEvent, (args: any) => {
     if (args.requestCode == CREATE_FILE_AND_WRITE_REQUEST) {
       if (args.intent) {
         let uri: java.net.URI = args.intent.getData();
+        writeBytesToUri(uri, sharedDataBuffer);
 
-        writeBytesToUri(uri, global_data);
+        sharedDataBuffer = [];
+      }
+    } else if (args.requestCode == PICK_A_FILE_WITH_USER_DATA_AND_IMPORT) {
+      if (args.intent) {
+        let uri: java.net.URI = args.intent.getData();
 
-        global_data = [];
+        let fileContent = readFileFromUri(uri);
+        console.log(fileContent);
+        let userData: UserData = JSON.parse(fileContent);
+
+        importUserData(userData);
       }
     } else {
-      throw 'activity failed';
+      console.error(`no handler for requestCode ${args.requestCode}, args:`);
+      console.error(args)
     }
   }
 );
 
-function intentToPickCreateFile(fileName: string): android.content.Intent {
-  let intent = new android.content.Intent(android.content.Intent.ACTION_CREATE_DOCUMENT);
-  intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
-  intent.setType("application/json");
-  intent.putExtra(android.content.Intent.EXTRA_TITLE, fileName);
+function readFileFromUri(uri: java.net.URI): string {
+    let inputStream: java.io.InputStream = app.android.nativeApp
+            .getContentResolver()
+            .openInputStream(uri);
 
-  return intent;
+    let bufferedReader = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream));
+    let stringBuilder = new java.lang.StringBuilder();
+
+    while (true) {
+      let line = bufferedReader.readLine();
+
+      if (line == null) break;
+
+      stringBuilder.append(line);
+    }
+
+    bufferedReader.close();
+    inputStream.close();
+
+    return stringBuilder.toString();
 }
 
 function writeBytesToUri(uri: java.net.URI, bytes: number[]): [boolean, any] {
@@ -59,7 +109,6 @@ function writeBytesToUri(uri: java.net.URI, bytes: number[]): [boolean, any] {
   return [true, undefined];
 }
 
-// TODO: a: num[] = string
 function anyToBytes(object: any): number[] {
   return Array.from(encoder.encode(JSON.stringify(object)));
 }

@@ -11,6 +11,7 @@ export namespace Theme {
     switch (theme) {
       case Theme.ROSE_PINE_DARK: return 'Rosé Pine Moon';
       case Theme.ROSE_PINE_LIGHT: return 'Rosé Pine Dawn';
+      default: return 'UNKNOWN';
     }
   }
 

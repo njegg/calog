@@ -34,6 +34,16 @@ export namespace Session {
       dateHash: DateHash.fromDate(date)
     };
   }
+
+  export function fromCompact(s: SessionCompact): Session {
+    return {
+      dateHash: s.d,
+      reps: s.r,
+      sets: s.s,
+      note: s.n,
+      exercise: Exercise.fromCompact(s.e),
+    }
+  }
 }
 
 export namespace SessionCompact {

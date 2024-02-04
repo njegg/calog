@@ -37,3 +37,12 @@ export namespace ExerciseCompact {
     return { n: exercise.name, t: exercise.type.valueOf() };
   }
 }
+
+export namespace Exercise {
+  export function fromCompact(e: ExerciseCompact): Exercise {
+    return {
+      name: e.n,
+      type: e.t,
+    }
+  }
+}

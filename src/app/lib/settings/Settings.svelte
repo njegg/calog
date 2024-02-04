@@ -1,19 +1,35 @@
 <script lang='ts'>
   import { ExerciseRepo, SessionRepo } from "~/persistance/db";
-  import { writeToPickedFile } from "../util/file_access";
+  import { writeToPickedFile, pickAndImportUserData } from "../util/file_access";
   import Card from "../common/Card.svelte";
   import { generate } from "~/persistance/test/test_data_generation";
-  import { Theme, updateTheme } from "../common/theme";
+  import { Theme, themeStore, updateTheme } from "../common/theme";
+  import { UserData } from "../util/user_data";
 
-  function backupSessions(): void {
-    writeToPickedFile('calog_sessions_data.json', SessionRepo.allCompact());
+  let theme: Theme;
+  themeStore.subscribe(t => theme = t.type);
+
+  function backupData(): void {
+    let userData: UserData = {
+      theme,
+      sessions: SessionRepo.allCompact(),
+    };
+
+    writeToPickedFile(`calog_data-${new Date().toISOString()}.json`, userData);
+  }
+
+  function readDataFromJsonFile(): void {
+    pickAndImportUserData();
   }
 
   function generateTestData(): void {
-    let start = new Date('2023/04/13'); // TODO: dont hardcode
-    let end = new Date();
+    let monthInMs = 1000 * 60 * 60 * 24 * 30;
 
-    let generatedData = generate(start, end, 2, ExerciseRepo.all()[0]);
+    let today = new Date();
+    let start = new Date();
+    start.setTime(today.getTime() - monthInMs);
+
+    let generatedData = generate(start, today, 2, ExerciseRepo.all()[0]);
 
     let added = generatedData.map(s => SessionRepo.add(s));
 
@@ -28,11 +44,7 @@
   }
 
   function testButton() {
-    console.log('ouh');
-  }
-
-  function theme(): void {
-    updateTheme(Theme.ROSE_PINE_DARK);
+    console.log('test butt');
   }
 </script>
 
@@ -41,7 +53,11 @@
   flexDirection='column'
 >
   <Card margin='8 0'>
-    <label text='Export Sessions' on:tap={backupSessions} />
+    <label text='Export Data' on:tap={backupData} />
+  </Card>
+
+  <Card margin='8 0'>
+    <label text='Import Data' on:tap={readDataFromJsonFile} />
   </Card>
 
   <Card margin='8 0'>

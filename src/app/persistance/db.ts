@@ -41,6 +41,14 @@ export class SessionRepo {
     else    return false
   }
 
+  static addAll(sessions: Session[]): void {
+    this.db.inBatch(() => {
+      for (let s of sessions) {
+        this.db.createDocument(s);
+      }
+    });
+  }
+
   static del(id: string): boolean {
     return this.db.deleteDocument(id);
   }
