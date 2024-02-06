@@ -11,8 +11,6 @@ export async function importUserData(userData: UserData): Promise<void> {
   if (userData.sessions) {
     let sessions = userData.sessions.map(Session.fromCompact)
 
-    console.log(`importing ${sessions.length} sessions`);
-
     let failedAdds = sessions
       .map(s => SessionRepo.add(s))
       .reduce((fails, isAdded) => fails += +!isAdded, 0);
@@ -23,7 +21,6 @@ export async function importUserData(userData: UserData): Promise<void> {
   }
 
   if (userData.theme) {
-    console.log(`setting theme to ${Theme.getName(userData.theme)}`);
     updateTheme(userData.theme);
   }
 }

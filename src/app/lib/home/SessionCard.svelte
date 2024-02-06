@@ -1,44 +1,43 @@
 <script lang='ts'>
-import { selectedSession, selectedDeleteSession } from "~/lib/selectedSessionCardStore";
-import Card from "~/lib/common/Card.svelte";
-import CircleButton from "~/lib/common/CircleButton.svelte";
-import { Session } from "~/persistance/model/session";
-import { createEventDispatcher } from "svelte";
-import { SessionData, SessionRepo } from "~/persistance/db";
-import SessionCardData from "./SessionCardData.svelte";
-    import { ThemeColors, themeStore } from "../common/theme";
 
-export let session: Session;
+  import { selectedSession, selectedDeleteSession } from "~/lib/selectedSessionCardStore";
+  import Card from "~/lib/common/Card.svelte";
+  import CircleButton from "~/lib/common/CircleButton.svelte";
+  import { Session } from "~/persistance/model/session";
+  import { createEventDispatcher } from "svelte";
+  import { SessionRepo } from "~/persistance/db";
+  import SessionCardData from "./SessionCardData.svelte";
+  import { ThemeColors, themeStore } from "../common/theme";
 
-let theme: ThemeColors;
-themeStore.subscribe(t => theme = t);
+  export let session: Session;
 
-const dispatch = createEventDispatcher();
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
-let sessionData: SessionData = { reps: session.reps, sets: session.sets, dateHash: session.dateHash || 0, note: session.note };
+  const dispatch = createEventDispatcher();
 
-$: confirmDelete = false;
-$: showMore = false;
+  $: confirmDelete = false;
+  $: showMore = false;
 
-selectedSession.subscribe(s => showMore = s == session.id);
-selectedDeleteSession.subscribe(s => confirmDelete = s == session.id);
+  selectedSession.subscribe(s => showMore = s == session.id);
+  selectedDeleteSession.subscribe(s => confirmDelete = s == session.id);
 
-function onXTap() {
-  selectedDeleteSession.update(s => session.id == s ? undefined : session.id);
-}
+  function onXTap(): void {
+    selectedDeleteSession.update(s => session.id == s ? undefined : session.id);
+  }
 
-function deleteThis() {
-  selectedSession.update(_ => undefined)
-  dispatch('delete', {id: session.id});
-}
+  function deleteThis(): void {
+    selectedSession.update(_ => undefined)
+    dispatch('delete', {id: session.id});
+  }
 
 
-let lastSessionsData: SessionData[] = [];
+  let lastSessions: Session[] = [];
 
-const toggleSelected = () => {
-  lastSessionsData = showMore ? [] : SessionRepo.lastSessions(session, 5);
-  selectedSession.set(showMore ? undefined : session.id)
-}
+  const toggleSelected = () => {
+    lastSessions = showMore ? [] : SessionRepo.lastSessions(session, 5);
+    selectedSession.set(showMore ? undefined : session.id)
+  }
 
 </script>
 
@@ -88,11 +87,11 @@ const toggleSelected = () => {
       class:showMore
       marginTop={10}
     >
-      <SessionCardData data={sessionData} bind:showMore />
+    <SessionCardData on:update session={session} bind:showMore />
 
       {#if showMore}
-        {#each lastSessionsData as data }
-          <SessionCardData data={data} bind:showMore />
+        {#each lastSessions as session }
+          <SessionCardData on:update session={session} bind:showMore />
         {/each}
       {/if}
     </stackLayout>

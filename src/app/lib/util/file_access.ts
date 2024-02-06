@@ -55,7 +55,6 @@ app.android.on(app.AndroidApplication.activityResultEvent, (args: any) => {
         let uri: java.net.URI = args.intent.getData();
 
         let fileContent = readFileFromUri(uri);
-        console.log(fileContent);
         let userData: UserData = JSON.parse(fileContent);
 
         importUserData(userData);

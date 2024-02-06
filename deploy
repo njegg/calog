@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "enter keystore passphrase"
+echo -n "enter keystore passphrase > "
 read -s pass
 
 ns deploy android --release --path ./src \

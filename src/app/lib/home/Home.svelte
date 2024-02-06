@@ -1,107 +1,251 @@
 <script lang='ts'>
+  import SessionCard from "./SessionCard.svelte";
+  import NavigationBar from "~/lib/common/NavigationBar.svelte";
+  import { SessionRepo } from "~/persistance/db";
+  import { Session } from "~/persistance/model/session";
+  import { selectedSession } from "../selectedSessionCardStore";
+  import { DateHash } from "../util/date_hash";
+  import { ThemeColors, themeStore } from "../common/theme";
+  import AddSessionModal from "../search/AddSessionModal.svelte";
+  import { SessionModalState } from "../search/sessionModalSelection";
+  import { TextField } from "@nativescript/core";
+  import { KeyboardType } from '~/../types/keyboardType';
 
-import SessionCard from "./SessionCard.svelte";
-import NavigationBar from "~/lib/common/NavigationBar.svelte";
-import { SessionRepo } from "~/persistance/db";
-import { Session } from "~/persistance/model/session";
-import { selectedSession } from "../selectedSessionCardStore";
-import { DateHash } from "../util/date_hash";
-import { ThemeColors, themeStore } from "../common/theme";
+  const dayInMS = 24 * 60 * 60 * 1000;
 
-const dayInMS = 24 * 60 * 60 * 1000;
-
-let theme: ThemeColors;
-themeStore.subscribe(t => theme = t);
-
-let date = new Date();
-let dateHash = DateHash.fromDate(date);
-let todayHash = dateHash;
-let sessionCache: Map<number, Session[]> = createSessionCache();
-
-let sessions: Session[] = [];
-
-$: {
-  dateHash = DateHash.fromDate(date);
-
-  if (dateHash > todayHash) { // no time travel
-    date = new Date();
-  } else {
-    // Unselect the one selected for deleting
-    selectedSession.update(_ => undefined);
-
-    updateSessionCache();
-  }
-}
-
-function updateSessionCache() {
-  let cached = sessionCache.get(dateHash);
-
-  if (!cached) {
-    cached = SessionRepo.allBy('dateHash', dateHash);
-    sessionCache.set(dateHash, cached);
+  enum State {
+    NORMAL,
+    DATE_PICKER,
+    EDIT_MODAL,
   }
 
-  sessions = cached;
-}
+  $: state = State.NORMAL;
 
-SessionRepo.onChangeListener(() => {
-  sessionCache = createSessionCache();
-  sessions = sessionCache.get(dateHash) || [];
-});
+  $: input = '';
+  $: reps = '';
+  $: sets = '';
+  $: note = '';
+  $: textField = <any> new TextField(); // any because the lsp is ass
+  $: editModalState = SessionModalState.SETS;
+  let editingSession: Session | undefined;
+  let keyboardType: KeyboardType = 'integer';
 
-function createSessionCache(): Map<number, Session[]> {
-  let cache = new Map<number, Session[]>();
+  let theme: ThemeColors;
+  themeStore.subscribe(t => theme = t);
 
-  let hash = DateHash.fromDate(date);
-  let todayHash = DateHash.fromDate(new Date());
+  let date = new Date();
+  let dateHash = DateHash.fromDate(date);
+  let todayHash = dateHash;
+  let sessionCache: Map<number, Session[]> = createSessionCache();
 
-  cache.set(hash, SessionRepo.allBy('dateHash', hash));
+  let sessions: Session[] = [];
 
-  if (hash != todayHash) {
-    cache.set(todayHash, SessionRepo.allBy('dateHash', todayHash));
+  $: {
+    dateHash = DateHash.fromDate(date);
+
+    if (dateHash > todayHash) { // no time travel
+      date = new Date();
+    } else {
+      // Unselect the one selected for deleting
+      selectedSession.update(_ => undefined);
+
+      updateSessionCache();
+    }
   }
 
-  return cache;
-}
+  function onTextChange(event: any) {
+    input = event.value;
 
+    if (editModalState == SessionModalState.SETS) {
+      sets = input;
+    } else if (editModalState == SessionModalState.REPS) {
+      reps = input;
+    } else {
+      note = input;
+    }
+  };
 
-$: isDatePickerVisible = false;
+  function updateSessionCache() {
+    let cached = sessionCache.get(dateHash);
 
-function next() {
-  if (isDatePickerVisible) {
-    isDatePickerVisible = false;
-  } else {
-    date.setTime(date.getTime() + dayInMS);
-    date = date;
+    if (!cached) {
+      cached = SessionRepo.allBy('dateHash', dateHash);
+      sessionCache.set(dateHash, cached);
+    }
+
+    sessions = cached;
   }
-}
 
-function prev() {
-  if (isDatePickerVisible) {
-    isDatePickerVisible = false;
-    date = new Date();
-  } else {
-    let prevDay = date.getTime() - dayInMS;
-    date.setTime(prevDay);
-    date = date;
+  SessionRepo.onChangeListener(() => {
+    sessionCache = createSessionCache();
+    sessions = sessionCache.get(dateHash) || [];
+  });
+
+  function createSessionCache(): Map<number, Session[]> {
+    let cache = new Map<number, Session[]>();
+
+    let hash = DateHash.fromDate(date);
+    let todayHash = DateHash.fromDate(new Date());
+
+    cache.set(hash, SessionRepo.allBy('dateHash', hash));
+
+    if (hash != todayHash) {
+      cache.set(todayHash, SessionRepo.allBy('dateHash', todayHash));
+    }
+
+    return cache;
   }
-}
 
-function swipe(e: any) {
-  console.log(e);
-}
 
-function datePickerTap() {
-  isDatePickerVisible = !isDatePickerVisible;
-}
+  function setInput(to: string) {
+      input = to;
 
-function deleteSession(event: any) {
-  let id: string = event.detail.id;
+      // fuck you
+      setTimeout(() => {
+        textField.nativeElement.focus()
+        textField.nativeView.setSelection(to.length);
+      }, 0);
+  }
 
-  // Instantly delete from ui, db refresh from event takes some time
-  sessions = sessions.filter(s => s.id != id);
-  SessionRepo.del(id);
-}
+  function next() {
+    switch (state) {
+      case State.DATE_PICKER: {
+        state = State.NORMAL;
+        return;
+      }
+
+      case State.NORMAL: {
+        date.setTime(date.getTime() + dayInMS);
+        date = date;
+
+        return;
+      }
+
+      case State.EDIT_MODAL: {
+        if (editingSession == undefined) {
+          throw new Error("illegale state");
+        }
+
+        switch (editModalState) {
+          case SessionModalState.SETS: {
+            editModalState = SessionModalState.REPS;
+
+            keyboardType = 'integer';
+            setInput(editingSession.reps.toString());
+
+            break;
+          }
+
+          case SessionModalState.REPS: {
+            editModalState = SessionModalState.NOTE;
+
+            keyboardType = 'url';
+            setInput(editingSession.note.toString());
+
+            break;
+          }
+
+          case SessionModalState.NOTE: {
+            editModalState = SessionModalState.SETS;
+            state = State.NORMAL;
+
+            if (editingSession && editingSession.id) {
+              editingSession.reps = +reps;
+              editingSession.sets = +sets;
+              editingSession.note = note;
+
+              if (SessionRepo.update(editingSession.id, editingSession)) {
+                sessions = SessionRepo.allByDate(date);
+              } else {
+                throw new Error("db failed to update session");
+              }
+            } else {
+              throw new Error("invalid state");
+            }
+
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  function prev() {
+    switch (state) {
+      case State.DATE_PICKER: {
+        state = State.NORMAL;
+        date = new Date();
+        return;
+      }
+
+      case State.NORMAL: {
+        let prevDay = date.getTime() - dayInMS;
+        date.setTime(prevDay);
+        date = date;
+
+        return;
+      }
+
+      case State.EDIT_MODAL: {
+        if (editingSession == undefined) {
+          throw new Error("illegale state");
+        }
+
+        switch (editModalState) {
+          case SessionModalState.SETS: {
+            state = State.NORMAL;
+            editingSession = undefined;
+            break;
+          }
+
+          case SessionModalState.REPS: {
+            editModalState = SessionModalState.SETS;
+
+            keyboardType = 'integer';
+            setInput(editingSession.sets.toString());
+
+            break;
+          }
+
+          case SessionModalState.NOTE: {
+            editModalState = SessionModalState.REPS;
+
+            keyboardType = 'integer';
+            setInput(editingSession.reps.toString());
+
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  function datePickerTap() {
+    switch (state) {
+      case State.NORMAL: state = State.DATE_PICKER; return;
+      case State.DATE_PICKER: state = State.NORMAL; return;
+      case State.EDIT_MODAL: throw new Error("Date picker taped on illegal state EDIT_MODAL");
+    }
+  }
+
+  function deleteSession(event: any) {
+    let id: string = event.detail.id;
+
+    sessions = sessions.filter(s => s.id != id);
+    SessionRepo.del(id);
+  }
+
+  function showEditModal(e: any) {
+    state = State.EDIT_MODAL;
+    editingSession = <Session> e.detail.session;
+    keyboardType = 'integer';
+
+    setInput(editingSession.sets.toString());
+
+    reps = editingSession.reps.toString();
+    sets = editingSession.sets.toString();
+    note = editingSession.note;
+  }
 
 </script>
 
@@ -110,22 +254,33 @@ function deleteSession(event: any) {
   justifyContent='flex-end'
   flexDirection='column'
 >
-  <scrollView>
-    <flexboxLayout
-      flexDirection='column'
-      justifyContent='flex-end'
-    >
-      <label height={200} />
-      {#each sessions as item}
-        <SessionCard
-          session={item}
-          on:delete={deleteSession}
-        />
-      {/each}
-    </flexboxLayout>
-  </scrollView>
+  {#if state == State.NORMAL || state == State.DATE_PICKER }
+    <scrollView>
+      <flexboxLayout
+        flexDirection='column'
+        justifyContent='flex-end'
+      >
+        <label height={200} />
+        {#each sessions as item}
+          <SessionCard
+            on:update={showEditModal}
+            session={item}
+            on:delete={deleteSession}
+          />
+        {/each}
+      </flexboxLayout>
+    </scrollView>
+  {:else if state == State.EDIT_MODAL && editingSession != undefined}
+    <AddSessionModal
+      bind:state={editModalState}
+      reps={reps}
+      sets={sets}
+      note={note}
+      exercise={editingSession.exercise}
+    />
+  {/if}
 
-  {#if isDatePickerVisible }
+  {#if state == State.DATE_PICKER }
     <datePicker
       bind:date
       borderRadius={20}
@@ -138,14 +293,36 @@ function deleteSession(event: any) {
   {/if}
 
   <NavigationBar next={next} prev={prev}>
-    <label
-      on:tap={datePickerTap}
+    {#if state == State.EDIT_MODAL }
+      <textField
+        bind:this={textField}
+        bind:text={input}
 
-      text={date.toLocaleDateString()}
-      color={theme.muted}
-      flexGrow={1}
-      textAlignment='center'
-    />
+        id="search-input"
+
+        on:textChange={onTextChange}
+        on:returnPress={next}
+
+        color={theme.text}
+        flexGrow={1}
+        editable='true'
+        returnKeyType='next'
+        bind:keyboardType
+        textAlignment='center'
+        fontFamily='monospace'
+        fontSize='20rem'
+        borderWidth='0'
+      />
+    {:else}
+      <label
+        on:tap={datePickerTap}
+
+        text={date.toLocaleDateString()}
+        color={theme.muted}
+        flexGrow={1}
+        textAlignment='center'
+      />
+    {/if}
   </NavigationBar>
 
 </flexboxLayout>

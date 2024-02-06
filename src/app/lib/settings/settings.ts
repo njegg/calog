@@ -24,13 +24,14 @@ if (__DEV__) {
 
 export const settingsCommands: SettingsCommand[] = [
   ...devCommands,
-  { name: "Backup data", exec: backupData },
+  { name: "Export data", exec: exportData },
   { name: "Import data", exec: importDataFromFile },
   { name: Theme.getName(Theme.ROSE_PINE_DARK), exec: () => updateTheme(Theme.ROSE_PINE_DARK) },
   { name: Theme.getName(Theme.ROSE_PINE_LIGHT), exec: () => updateTheme(Theme.ROSE_PINE_LIGHT) },
 ]
 
-function backupData(): void {
+
+function exportData(): void {
   let userData: UserData = {
     theme,
     sessions: SessionRepo.allCompact(),

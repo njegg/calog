@@ -1,21 +1,30 @@
 <script lang='ts'>
-  import { SessionData } from "~/persistance/db";
   import { DateHash } from "../util/date_hash";
-    import { ThemeColors, themeStore } from "../common/theme";
+  import { ThemeColors, themeStore } from "../common/theme";
+  import { createEventDispatcher } from "svelte";
+  import { Session } from "~/persistance/model/session";
 
-  export let data: SessionData;
+  let dispatch = createEventDispatcher();
+
+  export let session: Session;
   export let showMore: boolean;
 
   let theme: ThemeColors;
   themeStore.subscribe(t => theme = t);
 
   let today: number = DateHash.today;
-  let daysAgo: number = DateHash.dayDif(data.dateHash, today);
+  let daysAgo: number = DateHash.dayDif(session.dateHash, today);
   let text: string = '';
 
   if (daysAgo == 0) text = 'today';
   else if (daysAgo == 1) text = 'yesterday';
   else text = daysAgo + ' days ago'
+
+  function onTap(): void {
+    if (showMore) return;
+    dispatch('update', {session});
+    // dispatch('update');
+  }
 </script>
 
 <flexboxLayout
@@ -23,7 +32,9 @@
   paddingRight={8}
 >
   <label
-    text={data.sets + ' x ' + data.reps}
+    on:tap={onTap}
+
+    text={session.sets + ' x ' + session.reps}
     color={theme.rose}
     borderRadius={100}
     borderColor={theme.rose}

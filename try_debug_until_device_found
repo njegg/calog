@@ -1,5 +1,17 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+NC='\033[0m'
+
+clear
+
+echo -e $RED
+printf "DONT FORGET TO BACKUP DATA"
+echo -e $NC
+
+sleep 3
+
+
 ns debug android --path src
 
 while [ $? -ne 0 ];
