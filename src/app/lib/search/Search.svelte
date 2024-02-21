@@ -10,8 +10,8 @@
   import { ExerciseRepo, SessionRepo } from '~/persistance/db';
   import { SessionModalState } from './sessionModalSelection';
   import { ThemeColors, themeStore } from '../common/theme';
-    import AddExerciseModal from './AddExerciseModal.svelte';
-    import CircleButton from '../common/CircleButton.svelte';
+  import AddExerciseModal from './AddExerciseModal.svelte';
+  import CircleButton from '../common/CircleButton.svelte';
 
   export let exercises: Exercise[];
 
@@ -19,13 +19,14 @@
   themeStore.subscribe(t => theme = t);
 
   enum State {
-    Search,
-    AddSessionModal,
-    AddExerciseModal,
-    EditExerciseModal,
+    SEARCH,
+    ADD_SESSION_MODAL,
+    ADD_EXERCISE_MODAL,
+    EDIT_EXERCISE_MODAL,
   }
 
-  $: state = State.Search;
+  $: state = State.SEARCH;
+  $: sessionModalState = SessionModalState.SETS;
 
   $: searchResults = exercises;
   $: searchString = '';
@@ -34,9 +35,7 @@
 
   $: reps = '';
   $: sets = '';
-  $: note = '';
 
-  $: sessionModalState = SessionModalState.EXERCISE;
   $: textField = <any> new TextField(); // any because the lsp is ass
 
   let keyboardType: KeyboardType = 'url';
@@ -54,17 +53,26 @@
   function onTextChange(event: any) {
     input = event.value;
 
-    if (sessionModalState == SessionModalState.EXERCISE) {
-      searchString = input;
-      updateSearchResults();
-    } else if (sessionModalState == SessionModalState.SETS) {
-      sets = input;
-    } else if (sessionModalState == SessionModalState.REPS) {
-      reps = input;
-    } else {
-      note = input;
+    switch (state) {
+
+      case State.SEARCH:
+        searchString = input;
+        updateSearchResults();
+        break;
+
+      case State.ADD_SESSION_MODAL:
+        switch (sessionModalState) {
+          case SessionModalState.SETS: sets = input; break;
+          case SessionModalState.REPS: reps = input; break;
+        }
+
+        return;
+
+      case State.ADD_EXERCISE_MODAL:
+      case State.EDIT_EXERCISE_MODAL:
+
     }
-  };
+  }
 
   function onTap(event: any) {
     selectedExercise = event.detail.exercise;
@@ -72,132 +80,116 @@
   }
 
   function returnPress() {
-    if (addExerciseModalVisible) {
-      addExerciseModal.next();
-      return;
-    }
+    let exercisesFound = searchResults.length;
+    if (!exercisesFound) return;
 
-    if (sessionModalState == SessionModalState.EXERCISE) {
-      let exercisesFound = searchResults.length;
-      if (!exercisesFound) return;
-
-      selectedExercise =  searchResults[exercisesFound - 1];
-    }
+    selectedExercise =  searchResults[exercisesFound - 1];
 
     nextSelection();
   }
 
   function nextSelection() {
-    if (addExerciseModalVisible) {
-      addExerciseModal.next();
-      return;
-    }
+    switch (state) {
 
-    switch (sessionModalState) {
-      case SessionModalState.EXERCISE: {
-        sessionModalState = SessionModalState.SETS;
+      case State.SEARCH:
+          sessionModalState = SessionModalState.SETS;
+          state = State.ADD_SESSION_MODAL;
 
-        keyboardType = 'integer';
-        input = '';
+          keyboardType = 'integer';
+          input = '';
 
-        break;
-      }
+          break;
 
-      case SessionModalState.SETS: {
-        sessionModalState = SessionModalState.REPS
-        keyboardType = 'integer';
+      case State.ADD_SESSION_MODAL:
+        switch (sessionModalState) {
+          case SessionModalState.SETS: {
+            sessionModalState = SessionModalState.REPS
+            keyboardType = 'integer';
 
-        setInput(reps);
+            setInput(reps);
 
-        break;
-      }
-
-      case SessionModalState.REPS: {
-        sessionModalState = SessionModalState.NOTE;
-        keyboardType = 'url';
-
-        setInput(note);
-
-        break;
-      }
-
-      case SessionModalState.NOTE: {
-        sessionModalState = SessionModalState.EXERCISE;
-        keyboardType = 'url';
-
-        if (selectedExercise) {
-          let session: Session = Session.of(
-            new Date(),
-            selectedExercise,
-            +reps,
-            +sets,
-            note
-          );
-
-          if (!SessionRepo.add(session)) {
-              console.error('db broke')
+            break;
           }
 
-        } else {
-          throw 'how does throw work?' // TODO
+          case SessionModalState.REPS: {
+            sessionModalState = SessionModalState.SETS;
+            state = State.SEARCH;
+
+            keyboardType = 'url';
+
+            if (selectedExercise) {
+              let session: Session = Session.of(
+                new Date(),
+                selectedExercise,
+                +reps,
+                +sets,
+              );
+
+              if (!SessionRepo.add(session)) console.error('db broke')
+            }
+
+            reps = '';
+            sets = '';
+
+            setInput('');
+
+            break;
+          }
         }
+        break;
 
-        reps = '';
-        sets = '';
-        note = '';
+      case State.ADD_EXERCISE_MODAL:
+        addExerciseModal.next();
+        break;
 
-        setInput('');
+      case State.EDIT_EXERCISE_MODAL:
+
 
         break;
-      }
     }
   }
 
   function previousSelection() {
-    if (addExerciseModalVisible) {
-      addExerciseModal.prev();
-      return;
-    }
+    switch (state) {
 
-    switch (sessionModalState) {
-      case SessionModalState.EXERCISE: {
+      case State.SEARCH:
         input = '';
         searchString = '';
 
         setInput(searchString);
-
         break;
-      }
 
-      case SessionModalState.SETS: {
-        sessionModalState = SessionModalState.EXERCISE;
 
-        setInput(searchString);
+      case State.ADD_SESSION_MODAL:
+        switch (sessionModalState) {
 
-        reps = '';
-        sets = '';
-        keyboardType = 'url';
+          case SessionModalState.SETS:
+            state = State.SEARCH;
 
+            setInput(searchString);
+
+            reps = '';
+            sets = '';
+            keyboardType = 'url';
+
+            break;
+
+          case SessionModalState.REPS:
+            sessionModalState = SessionModalState.SETS;
+
+            setInput(sets);
+            keyboardType = 'integer';
+
+            break;
+        }
         break;
-      }
 
-      case SessionModalState.REPS: {
-        sessionModalState = SessionModalState.SETS;
+      case State.ADD_EXERCISE_MODAL:
+        addExerciseModal.prev();
+        return;
 
-        setInput(sets);
-        keyboardType = 'integer';
-
+      case State.EDIT_EXERCISE_MODAL:
         break;
-      }
-
-      case SessionModalState.NOTE: {
-        sessionModalState = SessionModalState.REPS;
-
-        setInput(reps);
-        keyboardType = 'integer';
-
-        break;
-      }
     }
   }
 
@@ -213,15 +205,16 @@
   }
 
   function showAddExerciseModal() {
-    addExerciseModalVisible = true;
+    state = State.ADD_EXERCISE_MODAL;
+    setInput("");
   }
 
-  function onAddExerciseModalClose(didAddExercise: boolean): void {
-    if (didAddExercise) {
+  function onAddExerciseModalClose(event: CustomEvent<boolean>): void {
+    if (event.detail) {
       exercises = ExerciseRepo.all();
     }
 
-    addExerciseModalVisible = false;
+    state = State.SEARCH;
     setInput("");
   }
 </script>
@@ -231,61 +224,54 @@
   flexDirection='column'
 >
 
-    {#if sessionModalState != SessionModalState.EXERCISE }
-      <AddSessionModal
-        bind:reps
-        bind:sets
-        bind:note
-        bind:state={sessionModalState}
-        exercise={selectedExercise}
-        on:returnPress={returnPress}
-      />
-    {:else}
-
-  {#if !addExerciseModalVisible}
-      <ExerciseList exercises={searchResults} on:tap={onTap}/>
-  {/if}
-    {/if}
-
-  {#if addExerciseModalVisible}
+  {#if state == State.ADD_SESSION_MODAL }
+    <AddSessionModal
+      bind:reps
+      bind:sets
+      bind:state={sessionModalState}
+      exercise={selectedExercise}
+      on:returnPress={returnPress}
+    />
+  {:else if state == State.SEARCH}
+    <ExerciseList exercises={searchResults} on:tap={onTap}/>
+  {:else if state == State.ADD_EXERCISE_MODAL}
     <AddExerciseModal
       bind:this={addExerciseModal}
       bind:name={input}
-      on:wantsToClose={onAddExerciseModalClose}
-      />
+      on:wantsToClose={(e) => onAddExerciseModalClose(e)}
+    />
   {/if}
 
-    <NavigationBar
-      prev={previousSelection}
-      next={returnPress}
-    >
-      <textField
-        bind:this={textField}
-        bind:text={input}
+  <NavigationBar
+    prev={previousSelection}
+    next={returnPress}
+  >
+    <textField
+      bind:this={textField}
+      bind:text={input}
 
-        id="search-input"
+      id="search-input"
 
-        on:textChange={onTextChange}
-        on:returnPress={returnPress}
+      on:textChange={onTextChange}
+      on:returnPress={returnPress}
 
-        color={theme.text}
-        flexGrow={1}
-        editable='true'
-        returnKeyType='next'
-        bind:keyboardType
+      color={theme.text}
+      flexGrow={1}
+      editable='true'
+      returnKeyType='next'
+      bind:keyboardType
 
-        textAlignment='center'
-        fontFamily='monospace'
-        fontSize='20rem'
-        borderWidth='0'
-      />
+      textAlignment='center'
+      fontFamily='monospace'
+      fontSize='20rem'
+      borderWidth='0'
+    />
 
-      {#if !addExerciseModalVisible }
-        <CircleButton  text="+" backgroundColor={theme.love} color={theme.text} width={40} on:tap={showAddExerciseModal} />
-      {/if}
+    {#if state == State.SEARCH }
+      <CircleButton  text="+" backgroundColor={theme.love} color={theme.text} width={40} on:tap={showAddExerciseModal} />
+    {/if}
 
-    </NavigationBar>
-
+  </NavigationBar>
 </flexboxLayout>
 
 <style>

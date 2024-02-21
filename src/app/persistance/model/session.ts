@@ -7,7 +7,6 @@ export interface Session {
   exercise: Exercise;
   reps: number;
   sets: number;
-  note: string;
 }
 
 export interface SessionCompact {
@@ -15,7 +14,6 @@ export interface SessionCompact {
   e: ExerciseCompact,
   r: number;
   s: number;
-  n: string;
 }
 
 export namespace Session {
@@ -24,13 +22,11 @@ export namespace Session {
     exercise: Exercise,
     reps: number,
     sets: number,
-    note: string = ""
   ): Session {
     return {
       exercise,
       reps,
       sets,
-      note,
       dateHash: DateHash.fromDate(date)
     };
   }
@@ -40,7 +36,6 @@ export namespace Session {
       dateHash: s.d,
       reps: s.r,
       sets: s.s,
-      note: s.n,
       exercise: Exercise.fromCompact(s.e),
     }
   }
@@ -53,7 +48,6 @@ export namespace SessionCompact {
       e: ExerciseCompact.of(session.exercise),
       r: session.reps,
       s: session.sets,
-      n: session.note
     };
   }
 }

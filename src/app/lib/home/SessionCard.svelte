@@ -73,14 +73,6 @@
       {/if}
     </flexboxLayout>
 
-    {#if session.note?.length > 0}
-      <label
-        text={session.note}
-        color={theme.muted}
-        fontSize={16}
-      />
-    {/if}
-
     <stackLayout
       flexWrapBefore={true}
       borderColor={theme.rose}

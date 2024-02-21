@@ -24,7 +24,6 @@
   $: input = '';
   $: reps = '';
   $: sets = '';
-  $: note = '';
   $: textField = <any> new TextField(); // any because the lsp is ass
   $: editModalState = SessionModalState.SETS;
   let editingSession: Session | undefined;
@@ -60,8 +59,6 @@
       sets = input;
     } else if (editModalState == SessionModalState.REPS) {
       reps = input;
-    } else {
-      note = input;
     }
   };
 
@@ -137,22 +134,12 @@
           }
 
           case SessionModalState.REPS: {
-            editModalState = SessionModalState.NOTE;
-
-            keyboardType = 'url';
-            setInput(editingSession.note.toString());
-
-            break;
-          }
-
-          case SessionModalState.NOTE: {
             editModalState = SessionModalState.SETS;
             state = State.NORMAL;
 
             if (editingSession && editingSession.id) {
               editingSession.reps = +reps;
               editingSession.sets = +sets;
-              editingSession.note = note;
 
               if (SessionRepo.update(editingSession.id, editingSession)) {
                 sessions = SessionRepo.allByDate(date);
@@ -206,15 +193,6 @@
 
             break;
           }
-
-          case SessionModalState.NOTE: {
-            editModalState = SessionModalState.REPS;
-
-            keyboardType = 'integer';
-            setInput(editingSession.reps.toString());
-
-            break;
-          }
         }
       }
     }
@@ -244,7 +222,6 @@
 
     reps = editingSession.reps.toString();
     sets = editingSession.sets.toString();
-    note = editingSession.note;
   }
 
 </script>
@@ -275,7 +252,6 @@
       bind:state={editModalState}
       reps={reps}
       sets={sets}
-      note={note}
       exercise={editingSession.exercise}
     />
   {/if}

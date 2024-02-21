@@ -7,7 +7,6 @@
   export let exercise: Exercise;
   export let sets: string;
   export let reps: string;
-  export let note: string;
   export let state: SessionModalState;
 
   let theme: ThemeColors;
@@ -52,13 +51,5 @@
       alt='rep'
     />
   </flexboxLayout>
-
-  <SelectableLabel
-    margin='20 0 0 0'
-    selected={state == SessionModalState.NOTE}
-    bind:text={note}
-    alt='note'
-    width='100%'
-  />
 </stackLayout>
 
