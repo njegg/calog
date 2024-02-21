@@ -7,28 +7,41 @@
   import AddSessionModal from './AddSessionModal.svelte';
   import ExerciseList from './ExerciseList.svelte';
   import NavigationBar from '../common/NavigationBar.svelte';
-  import { SessionRepo } from '~/persistance/db';
+  import { ExerciseRepo, SessionRepo } from '~/persistance/db';
   import { SessionModalState } from './sessionModalSelection';
-    import { ThemeColors, themeStore } from '../common/theme';
+  import { ThemeColors, themeStore } from '../common/theme';
+    import AddExerciseModal from './AddExerciseModal.svelte';
+    import CircleButton from '../common/CircleButton.svelte';
 
   export let exercises: Exercise[];
 
   let theme: ThemeColors;
   themeStore.subscribe(t => theme = t);
 
+  enum State {
+    Search,
+    AddSessionModal,
+    AddExerciseModal,
+    EditExerciseModal,
+  }
+
+  $: state = State.Search;
+
   $: searchResults = exercises;
   $: searchString = '';
   $: input = '';
+  $: addExerciseModalVisible = false;
 
   $: reps = '';
   $: sets = '';
   $: note = '';
 
-  $: selection = SessionModalState.EXERCISE;
+  $: sessionModalState = SessionModalState.EXERCISE;
   $: textField = <any> new TextField(); // any because the lsp is ass
 
   let keyboardType: KeyboardType = 'url';
   let selectedExercise: Exercise;
+  let addExerciseModal: AddExerciseModal;
 
   function updateSearchResults() {
       if (input == '') {
@@ -41,12 +54,12 @@
   function onTextChange(event: any) {
     input = event.value;
 
-    if (selection == SessionModalState.EXERCISE) {
+    if (sessionModalState == SessionModalState.EXERCISE) {
       searchString = input;
       updateSearchResults();
-    } else if (selection == SessionModalState.SETS) {
+    } else if (sessionModalState == SessionModalState.SETS) {
       sets = input;
-    } else if (selection == SessionModalState.REPS) {
+    } else if (sessionModalState == SessionModalState.REPS) {
       reps = input;
     } else {
       note = input;
@@ -59,7 +72,12 @@
   }
 
   function returnPress() {
-    if (selection == SessionModalState.EXERCISE) {
+    if (addExerciseModalVisible) {
+      addExerciseModal.next();
+      return;
+    }
+
+    if (sessionModalState == SessionModalState.EXERCISE) {
       let exercisesFound = searchResults.length;
       if (!exercisesFound) return;
 
@@ -70,9 +88,14 @@
   }
 
   function nextSelection() {
-    switch (selection) {
+    if (addExerciseModalVisible) {
+      addExerciseModal.next();
+      return;
+    }
+
+    switch (sessionModalState) {
       case SessionModalState.EXERCISE: {
-        selection = SessionModalState.SETS;
+        sessionModalState = SessionModalState.SETS;
 
         keyboardType = 'integer';
         input = '';
@@ -81,7 +104,7 @@
       }
 
       case SessionModalState.SETS: {
-        selection = SessionModalState.REPS
+        sessionModalState = SessionModalState.REPS
         keyboardType = 'integer';
 
         setInput(reps);
@@ -90,7 +113,7 @@
       }
 
       case SessionModalState.REPS: {
-        selection = SessionModalState.NOTE;
+        sessionModalState = SessionModalState.NOTE;
         keyboardType = 'url';
 
         setInput(note);
@@ -99,7 +122,7 @@
       }
 
       case SessionModalState.NOTE: {
-        selection = SessionModalState.EXERCISE;
+        sessionModalState = SessionModalState.EXERCISE;
         keyboardType = 'url';
 
         if (selectedExercise) {
@@ -131,7 +154,12 @@
   }
 
   function previousSelection() {
-    switch (selection) {
+    if (addExerciseModalVisible) {
+      addExerciseModal.prev();
+      return;
+    }
+
+    switch (sessionModalState) {
       case SessionModalState.EXERCISE: {
         input = '';
         searchString = '';
@@ -142,7 +170,7 @@
       }
 
       case SessionModalState.SETS: {
-        selection = SessionModalState.EXERCISE;
+        sessionModalState = SessionModalState.EXERCISE;
 
         setInput(searchString);
 
@@ -154,7 +182,7 @@
       }
 
       case SessionModalState.REPS: {
-        selection = SessionModalState.SETS;
+        sessionModalState = SessionModalState.SETS;
 
         setInput(sets);
         keyboardType = 'integer';
@@ -163,7 +191,7 @@
       }
 
       case SessionModalState.NOTE: {
-        selection = SessionModalState.REPS;
+        sessionModalState = SessionModalState.REPS;
 
         setInput(reps);
         keyboardType = 'integer';
@@ -183,50 +211,81 @@
 
       updateSearchResults();
   }
+
+  function showAddExerciseModal() {
+    addExerciseModalVisible = true;
+  }
+
+  function onAddExerciseModalClose(didAddExercise: boolean): void {
+    if (didAddExercise) {
+      exercises = ExerciseRepo.all();
+    }
+
+    addExerciseModalVisible = false;
+    setInput("");
+  }
 </script>
 
 <flexboxLayout
   justifyContent='flex-end'
   flexDirection='column'
 >
-  {#if selection != SessionModalState.EXERCISE }
-    <AddSessionModal
-      bind:reps
-      bind:sets
-      bind:note
-      bind:state={selection}
-      exercise={selectedExercise}
-      on:returnPress={returnPress}
-    />
-  {:else}
-    <ExerciseList exercises={searchResults} on:tap={onTap}/>
+
+    {#if sessionModalState != SessionModalState.EXERCISE }
+      <AddSessionModal
+        bind:reps
+        bind:sets
+        bind:note
+        bind:state={sessionModalState}
+        exercise={selectedExercise}
+        on:returnPress={returnPress}
+      />
+    {:else}
+
+  {#if !addExerciseModalVisible}
+      <ExerciseList exercises={searchResults} on:tap={onTap}/>
+  {/if}
+    {/if}
+
+  {#if addExerciseModalVisible}
+    <AddExerciseModal
+      bind:this={addExerciseModal}
+      bind:name={input}
+      on:wantsToClose={onAddExerciseModalClose}
+      />
   {/if}
 
-  <NavigationBar
-    prev={previousSelection}
-    next={returnPress}
-  >
-    <textField
-      bind:this={textField}
-      bind:text={input}
+    <NavigationBar
+      prev={previousSelection}
+      next={returnPress}
+    >
+      <textField
+        bind:this={textField}
+        bind:text={input}
 
-      id="search-input"
+        id="search-input"
 
-      on:textChange={onTextChange}
-      on:returnPress={returnPress}
+        on:textChange={onTextChange}
+        on:returnPress={returnPress}
 
-      color={theme.text}
-      flexGrow={1}
-      editable='true'
-      returnKeyType='next'
-      bind:keyboardType
+        color={theme.text}
+        flexGrow={1}
+        editable='true'
+        returnKeyType='next'
+        bind:keyboardType
 
-      textAlignment='center'
-      fontFamily='monospace'
-      fontSize='20rem'
-      borderWidth='0'
-    />
-  </NavigationBar>
+        textAlignment='center'
+        fontFamily='monospace'
+        fontSize='20rem'
+        borderWidth='0'
+      />
+
+      {#if !addExerciseModalVisible }
+        <CircleButton  text="+" backgroundColor={theme.love} color={theme.text} width={40} on:tap={showAddExerciseModal} />
+      {/if}
+
+    </NavigationBar>
+
 </flexboxLayout>
 
 <style>

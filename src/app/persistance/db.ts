@@ -85,7 +85,7 @@ export class SessionRepo {
 
     this.db = new CouchBase(this.dbName);
     this.createListener();
-    let id = this.db.createDocument(Session.of(new Date(), {name: 'temp', type: 0}, 0, 0));
+    let id = this.db.createDocument(Session.of(new Date(), {name: 'temp', tags: []}, 0, 0));
     this.del(id);
   }
 }
@@ -93,24 +93,31 @@ export class SessionRepo {
 // TODO: something better?
 export class ExerciseRepo {
   private static dbName: string = 'exercises'
+  private static db: CouchBase = new CouchBase(this.dbName);
 
   static {
-    let db = new CouchBase(this.dbName);
-
-    // No exercises, load default to db
-    if (!db.query({select: []}).length) {
-      default_exercises.forEach(e => db.createDocument(e)) // TODO: Batch perhaps, didnt work before
+    if (!this.db.query({select: []}).length) {
+      default_exercises.forEach(e => this.db.createDocument(e)) // TODO: Batch perhaps, didnt work before
     }
-
-    db.close();
   }
 
-  static all(): Exercise[] { // Not called often so open/close on call
-    let db = new CouchBase(this.dbName);
-    let exercises = db.query({ select: [] });
-
-    db.close();
+  static all(): Exercise[] {
+    let exercises = this.db.query({ select: [] });
     return exercises;
   }
-}
 
+  static add(exercise: Exercise): boolean {
+    let id = this.db.createDocument(exercise);
+
+    if (id) return true // any type ok
+    else    return false
+  }
+
+  static shitAss(): void {
+    this.db.destroyDatabase();
+  }
+
+  static del(id: string): boolean {
+    return this.db.deleteDocument(id);
+  }
+}

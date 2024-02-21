@@ -5,36 +5,37 @@ export enum ExerciseType {
 export interface Exercise {
   id?: string;
   name: string;
-  type: ExerciseType;
+  tags: string[];
 }
+
 
 export interface ExerciseCompact {
   n: string,
-  t: number,
+  t: string[],
 }
 
 export const default_exercises: Exercise[] = [
-  { name: "Push Up", type: ExerciseType.PUSH },
-  { name: "Handstand", type: ExerciseType.PUSH },
-  { name: "Triceps Extension", type: ExerciseType.PUSH },
+  { name: "Push Up", tags: []},
+  { name: "Handstand", tags: []},
+  { name: "Triceps Extension", tags: []},
 
-  { name: "Pull Up", type: ExerciseType.PULL },
-  { name: "Chin Up", type: ExerciseType.PULL },
-  { name: "Bicep Curls", type: ExerciseType.PULL },
-  { name: "Muscle Up", type: ExerciseType.PULL },
-  { name: "Front Lever", type: ExerciseType.PULL },
+  { name: "Pull Up", tags: []},
+  { name: "Chin Up", tags: []},
+  { name: "Bicep Curls", tags: []},
+  { name: "Muscle Up", tags: []},
+  { name: "Front Lever", tags: []},
 
-  { name: "Squat", type: ExerciseType.LEG },
-  { name: "Pistol Squat", type: ExerciseType.LEG },
-  { name: "Lunges", type: ExerciseType.LEG },
-  { name: "Nordic Curls", type: ExerciseType.LEG },
+  { name: "Squat", tags: []},
+  { name: "Pistol Squat", tags: []},
+  { name: "Lunges", tags: []},
+  { name: "Nordic Curls", tags: []},
 
-  { name: "L-sit", type: ExerciseType.CORE },
+  { name: "L-sit", tags: []},
 ];
 
 export namespace ExerciseCompact {
   export function of(exercise: Exercise): ExerciseCompact {
-    return { n: exercise.name, t: exercise.type.valueOf() };
+    return { n: exercise.name, t: exercise.tags };
   }
 }
 
@@ -42,7 +43,7 @@ export namespace Exercise {
   export function fromCompact(e: ExerciseCompact): Exercise {
     return {
       name: e.n,
-      type: e.t,
+      tags: e.t,
     }
   }
 }
