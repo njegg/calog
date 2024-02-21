@@ -12,11 +12,14 @@
   import { ThemeColors, themeStore } from '../common/theme';
   import AddExerciseModal from './AddExerciseModal.svelte';
   import CircleButton from '../common/CircleButton.svelte';
+  import { HapticImpactType, Haptics } from '@nativescript/haptics';
 
   export let exercises: Exercise[];
 
   let theme: ThemeColors;
   themeStore.subscribe(t => theme = t);
+
+  let haptic = Haptics.isSupported();
 
   enum State {
     SEARCH,
@@ -31,7 +34,6 @@
   $: searchResults = exercises;
   $: searchString = '';
   $: input = '';
-  $: addExerciseModalVisible = false;
 
   $: reps = '';
   $: sets = '';
@@ -75,13 +77,18 @@
   }
 
   function onTap(event: any) {
+    if (haptic) Haptics.impact(HapticImpactType.LIGHT);
+
     selectedExercise = event.detail.exercise;
     nextSelection();
   }
 
   function returnPress() {
     let exercisesFound = searchResults.length;
-    if (!exercisesFound) return;
+    if (state == State.SEARCH && !exercisesFound) {
+      showAddExerciseModal()
+      return;
+    }
 
     selectedExercise =  searchResults[exercisesFound - 1];
 
@@ -102,16 +109,15 @@
 
       case State.ADD_SESSION_MODAL:
         switch (sessionModalState) {
-          case SessionModalState.SETS: {
+          case SessionModalState.SETS:
             sessionModalState = SessionModalState.REPS
             keyboardType = 'integer';
 
             setInput(reps);
 
             break;
-          }
 
-          case SessionModalState.REPS: {
+          case SessionModalState.REPS:
             sessionModalState = SessionModalState.SETS;
             state = State.SEARCH;
 
@@ -134,7 +140,6 @@
             setInput('');
 
             break;
-          }
         }
         break;
 
@@ -143,8 +148,6 @@
         break;
 
       case State.EDIT_EXERCISE_MODAL:
-
-
         break;
     }
   }
@@ -185,7 +188,11 @@
         break;
 
       case State.ADD_EXERCISE_MODAL:
-        addExerciseModal.prev();
+        if (input == "") {
+          addExerciseModal.prev();
+        } else {
+          setInput("");
+        }
         return;
 
       case State.EDIT_EXERCISE_MODAL:
@@ -205,8 +212,9 @@
   }
 
   function showAddExerciseModal() {
+    if (haptic) Haptics.impact(HapticImpactType.LIGHT);
+
     state = State.ADD_EXERCISE_MODAL;
-    setInput("");
   }
 
   function onAddExerciseModalClose(event: CustomEvent<boolean>): void {
@@ -234,6 +242,18 @@
     />
   {:else if state == State.SEARCH}
     <ExerciseList exercises={searchResults} on:tap={onTap}/>
+
+    <stackLayout>
+      <CircleButton
+        text="+"
+        backgroundColor={theme.baseLight}
+        color={theme.pine}
+        width={40}
+        height={40}
+        on:tap={showAddExerciseModal}
+        fontSize={30}
+      />
+    </stackLayout>
   {:else if state == State.ADD_EXERCISE_MODAL}
     <AddExerciseModal
       bind:this={addExerciseModal}
@@ -266,11 +286,6 @@
       fontSize='20rem'
       borderWidth='0'
     />
-
-    {#if state == State.SEARCH }
-      <CircleButton  text="+" backgroundColor={theme.love} color={theme.text} width={40} on:tap={showAddExerciseModal} />
-    {/if}
-
   </NavigationBar>
 </flexboxLayout>
 

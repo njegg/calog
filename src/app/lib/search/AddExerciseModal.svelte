@@ -10,7 +10,6 @@
   themeStore.subscribe(t => theme = t);
 
   $: tags = <string[]>[];
-  let textField: any;
 
   const dispatch = createEventDispatcher();
 
@@ -26,22 +25,26 @@
     iWantToClose(false);
   }
 
-  onMount(() => {setTimeout(() => textField.nativeElement.focus(), 0);})
-
   function save(): void {
-    let sucksass = ExerciseRepo.add(<Exercise>{name, tags});
-    iWantToClose(sucksass);
+    ExerciseRepo.add(<Exercise>{name, tags});
+    iWantToClose(true);
   }
 </script>
 
+<label
+  fontSize={20}
+  color={theme.highlightLight}
+  text="new exercise"
+  textAlignment='center'
+/>
 
 <flexboxLayout
-  backgroundColor={theme.baseLight}
+  backgroundColor={theme.baseMid}
   borderRadius={20}
   margin={10}
   padding={20}
   flexDirection='column'
-  minHeight={100}
+  minHeight={50}
 >
   <label
     text={name == "" ? "name..." : name}

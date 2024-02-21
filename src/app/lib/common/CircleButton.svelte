@@ -13,6 +13,8 @@
     on:tap
     width={width}
     height={height}
+    minHeight={height}
+    minWidth={width}
     margin={margin}
     backgroundColor={backgroundColor}
     text={text}
@@ -23,5 +25,4 @@
 
     textAlignment='center'
     borderRadius={100}
-    minWidth={0}
 />

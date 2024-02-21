@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@nativescript/haptics": "^3.0.2"
+  }
+}

@@ -13,7 +13,6 @@
   themeStore.subscribe(t => theme = t);
 </script>
 
-
 <stackLayout
   backgroundColor={theme.baseLight}
   borderRadius={20}

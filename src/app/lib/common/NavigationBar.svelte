@@ -1,12 +1,27 @@
 <script lang='ts'>
+    import { HapticImpactType, Haptics } from "@nativescript/haptics";
   import CircleButton from "./CircleButton.svelte";
   import { ThemeColors, themeStore } from "./theme";
+
 
   let theme: ThemeColors;
   themeStore.subscribe(t => theme = t);
 
   export let next: () => void;
   export let prev: () => void;
+  export let haptic = true;
+
+  function _next() {
+    if (haptic && Haptics.isSupported()) Haptics.impact(HapticImpactType.LIGHT)
+
+    next();
+  }
+
+  function _prev() {
+    if (haptic && Haptics.isSupported()) Haptics.impact(HapticImpactType.LIGHT)
+
+    prev();
+  }
 </script>
 
 <flexboxLayout
@@ -19,29 +34,29 @@
     padding='5 3'
 >
   <CircleButton
-    on:tap={prev}
+    on:tap={_prev}
 
     text='❮'
-    backgroundColor={theme.highlightMid}
-    color={theme.muted}
+    backgroundColor={theme.baseMid}
+    color={theme.rose}
 
     width={40}
     height={40}
-    fontSize={20}
+    fontSize={16}
   />
 
   <slot />
 
   <CircleButton
-    on:tap={next}
+    on:tap={_next}
 
     text='❯'
-    backgroundColor={theme.highlightMid}
-    color={theme.muted}
+    backgroundColor={theme.baseMid}
+    color={theme.rose}
 
     width={40}
     height={40}
-    fontSize={20}
+    fontSize={16}
   />
 </flexboxLayout>
 

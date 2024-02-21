@@ -10,6 +10,7 @@
   import { SessionModalState } from "../search/sessionModalSelection";
   import { TextField } from "@nativescript/core";
   import { KeyboardType } from '~/../types/keyboardType';
+    import { HapticImpactType, HapticNotificationType, Haptics } from "@nativescript/haptics";
 
   const dayInMS = 24 * 60 * 60 * 1000;
 
@@ -41,6 +42,8 @@
 
   $: {
     dateHash = DateHash.fromDate(date);
+
+    Haptics.impact(HapticImpactType.LIGHT);
 
     if (dateHash > todayHash) { // no time travel
       date = new Date();
@@ -268,7 +271,7 @@
     />
   {/if}
 
-  <NavigationBar next={next} prev={prev}>
+  <NavigationBar next={next} prev={prev} haptic={false} >
     {#if state == State.EDIT_MODAL }
       <textField
         bind:this={textField}

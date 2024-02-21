@@ -26,7 +26,7 @@
     androidTabsPosition="bottom"
     tabTextColor={theme.muted}
     tabBackgroundColor={theme.baseDark}
-    selectedTabTextColor={theme.rose}
+    selectedTabTextColor={theme.love}
     androidSelectedTabHighlightColor={theme.baseDark}
   >
     <tabViewItem
